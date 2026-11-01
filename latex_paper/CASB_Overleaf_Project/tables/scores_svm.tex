@@ -1,0 +1,17 @@
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{SVM: equal-weight means on 40 matched datasets (percent). Each dataset score averages five supplied folds and two seeds.}\label{tab:scores_svm}
+\begin{tabular}{lrrrr}\toprule
+Method & G-mean & F1 & Precision & Recall \\
+\midrule
+No resampling & 59.194 & 54.653 & 66.558 & 49.652 \\
+SMOTE & 81.619 & 66.608 & 63.378 & 75.738 \\
+B-SMOTE & 79.669 & 65.610 & 61.503 & 74.052 \\
+ROS & 82.620 & 66.951 & 63.344 & 76.906 \\
+ADASYN & 81.499 & 64.737 & 59.979 & 76.397 \\
+CASB & 80.484 & 67.276 & 65.240 & 74.435 \\
+CASB-relaxed & 81.376 & 67.108 & 64.257 & 75.203 \\
+CASB-edited & 82.638 & 66.102 & 61.197 & 78.510 \\
+CASB-ROS & 80.964 & 67.444 & 65.313 & 75.003 \\
+\bottomrule\end{tabular}
+\end{table}

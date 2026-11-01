@@ -1,0 +1,17 @@
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{KNN: equal-weight means on 40 matched datasets (percent). Each dataset score averages five supplied folds and two seeds.}\label{tab:scores_knn}
+\begin{tabular}{lrrrr}\toprule
+Method & G-mean & F1 & Precision & Recall \\
+\midrule
+No resampling & 65.816 & 60.354 & 70.035 & 56.225 \\
+SMOTE & 82.702 & 64.554 & 59.028 & 77.816 \\
+B-SMOTE & 81.884 & 64.685 & 58.208 & 77.364 \\
+ROS & 81.691 & 64.396 & 58.588 & 76.221 \\
+ADASYN & 83.200 & 63.157 & 55.930 & 80.001 \\
+CASB & 82.098 & 65.355 & 59.939 & 76.244 \\
+CASB-relaxed & 82.399 & 64.642 & 59.108 & 77.038 \\
+CASB-edited & 83.404 & 63.408 & 56.056 & 80.618 \\
+CASB-ROS & 81.044 & 64.436 & 59.180 & 74.908 \\
+\bottomrule\end{tabular}
+\end{table}

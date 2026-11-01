@@ -1,0 +1,59 @@
+\begin{table}[pos=p]\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Average ranks and dataset win counts, on the same 40 tasks and nine methods throughout. Overall first averages the four classifiers within each dataset, then ranks methods. Lower average rank is better; wins count every method tied for the highest score within $10^{-12}$, so row totals can exceed 40. Bold marks the best rank or largest win count separately. These are individual-method wins, not retrospective CASB-family wins.}\label{tab:rank_wins}
+\resizebox{.86\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+\multicolumn{11}{l}{\textbf{A. Average ranks}} \\\midrule
+Metric & Group & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+G-mean & Overall & 8.925 & 5.350 & 4.650 & 4.875 & 3.025 & 5.375 & 4.500 & \textbf{2.725} & 5.575 \\
+ & SVM & 8.500 & 4.037 & 4.888 & 5.025 & \textbf{3.875} & 5.037 & 4.675 & 4.250 & 4.713 \\
+ & KNN & 8.400 & 5.450 & 4.750 & 4.725 & \textbf{3.425} & 4.500 & 4.350 & 3.538 & 5.862 \\
+ & RF & 8.325 & 5.875 & 4.225 & 5.275 & 3.337 & 5.275 & 4.588 & \textbf{2.913} & 5.188 \\
+ & LR & 8.675 & 4.487 & 4.600 & 4.500 & \textbf{3.538} & 5.562 & 4.825 & 4.000 & 4.812 \\
+\addlinespace[2pt]
+F1 & Overall & 6.925 & 4.825 & 4.375 & 5.225 & 5.475 & 4.237 & \textbf{3.638} & 5.550 & 4.750 \\
+ & SVM & 7.150 & 4.237 & 4.388 & 5.213 & 5.438 & 4.362 & \textbf{3.975} & 5.750 & 4.487 \\
+ & KNN & 5.900 & 4.950 & 4.675 & 4.950 & 5.950 & \textbf{3.850} & 4.175 & 5.562 & 4.987 \\
+ & RF & 7.600 & 5.000 & 4.275 & 5.700 & 4.763 & 4.475 & 4.438 & 4.600 & \textbf{4.150} \\
+ & LR & 7.025 & 4.688 & 4.275 & 4.987 & 5.350 & 4.562 & \textbf{4.225} & 5.525 & 4.362 \\
+\addlinespace[2pt]
+Precision & Overall & \textbf{2.275} & 4.400 & 4.438 & 6.300 & 7.025 & 4.013 & 4.475 & 7.675 & 4.400 \\
+ & SVM & \textbf{3.100} & 4.650 & 4.775 & 5.750 & 6.625 & 4.312 & 4.188 & 7.100 & 4.500 \\
+ & KNN & \textbf{2.600} & 4.888 & 4.625 & 5.737 & 7.162 & 3.837 & 4.487 & 7.213 & 4.450 \\
+ & RF & \textbf{3.438} & 4.075 & 4.575 & 5.825 & 6.787 & 4.138 & 4.950 & 7.438 & 3.775 \\
+ & LR & \textbf{2.438} & 4.675 & 4.713 & 6.062 & 6.650 & 4.325 & 4.675 & 7.088 & 4.375 \\
+\addlinespace[2pt]
+Recall & Overall & 9.000 & 5.463 & 4.775 & 4.638 & 2.400 & 5.987 & 4.888 & \textbf{2.000} & 5.850 \\
+ & SVM & 8.750 & 4.325 & 5.100 & 4.975 & 3.275 & 5.475 & 5.388 & \textbf{2.763} & 4.950 \\
+ & KNN & 8.863 & 5.550 & 5.088 & 4.338 & \textbf{2.525} & 4.875 & 4.963 & 2.612 & 6.188 \\
+ & RF & 8.438 & 6.000 & 4.562 & 5.062 & 3.175 & 5.588 & 4.625 & \textbf{2.275} & 5.275 \\
+ & LR & 8.850 & 4.688 & 4.925 & 4.287 & 3.138 & 5.875 & 5.275 & \textbf{2.812} & 5.150 \\
+\addlinespace[2pt]
+\bottomrule\end{tabular}}\par\vspace{5pt}
+\resizebox{.86\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+\multicolumn{11}{l}{\textbf{B. Dataset win counts}} \\\midrule
+Metric & Group & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+G-mean & Overall & 0 & 3 & 1 & 4 & 8 & 1 & 0 & \textbf{21} & 2 \\
+ & SVM & 1 & 10 & 6 & 6 & \textbf{11} & 4 & 4 & 10 & 7 \\
+ & KNN & 0 & 3 & 4 & 8 & 9 & 4 & 4 & \textbf{16} & 1 \\
+ & RF & 2 & 2 & 5 & 3 & 5 & 4 & 4 & \textbf{21} & 4 \\
+ & LR & 1 & 6 & 2 & 8 & 11 & 3 & 3 & \textbf{12} & 3 \\
+\addlinespace[2pt]
+F1 & Overall & \textbf{6} & 2 & 4 & 4 & 4 & \textbf{6} & 4 & 5 & 5 \\
+ & SVM & 6 & 6 & 5 & 6 & \textbf{8} & \textbf{8} & \textbf{8} & 4 & \textbf{8} \\
+ & KNN & \textbf{11} & 6 & 3 & 6 & 3 & 8 & 4 & 6 & 4 \\
+ & RF & 4 & 4 & 3 & 4 & 3 & \textbf{10} & 5 & 9 & 9 \\
+ & LR & 6 & 5 & 5 & 5 & \textbf{8} & 5 & 5 & 7 & 7 \\
+\addlinespace[2pt]
+Precision & Overall & \textbf{32} & 0 & 1 & 1 & 0 & 1 & 1 & 0 & 4 \\
+ & SVM & \textbf{28} & 3 & 3 & 5 & 3 & 8 & 4 & 1 & 6 \\
+ & KNN & \textbf{32} & 2 & 2 & 2 & 1 & 4 & 1 & 2 & 3 \\
+ & RF & \textbf{22} & 6 & 5 & 3 & 2 & 6 & 4 & 3 & 8 \\
+ & LR & \textbf{33} & 3 & 2 & 0 & 3 & 1 & 2 & 1 & 2 \\
+\addlinespace[2pt]
+Recall & Overall & 0 & 1 & 1 & 3 & 11 & 1 & 1 & \textbf{24} & 1 \\
+ & SVM & 0 & 10 & 5 & 7 & 16 & 6 & 7 & \textbf{20} & 9 \\
+ & KNN & 0 & 5 & 3 & 10 & 16 & 4 & 3 & \textbf{21} & 3 \\
+ & RF & 2 & 3 & 4 & 2 & 11 & 4 & 4 & \textbf{27} & 4 \\
+ & LR & 1 & 9 & 5 & 11 & 14 & 3 & 5 & \textbf{22} & 4 \\
+\addlinespace[2pt]
+\bottomrule\end{tabular}}\par\vspace{5pt}
+\end{table}

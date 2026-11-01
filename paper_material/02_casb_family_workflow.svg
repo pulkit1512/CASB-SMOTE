@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="851.4pt" height="513.36pt" viewBox="0 0 851.4 513.36" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-24T16:15:03.692411</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 513.36 
+L 851.4 513.36 
+L 851.4 -0 
+L 0 -0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 30.636 127.94832 
+L 251.604 127.94832 
+Q 264.159 127.94832 264.159 120.46392 
+L 264.159 63.58248 
+Q 264.159 56.09808 251.604 56.09808 
+L 30.636 56.09808 
+Q 18.081 56.09808 18.081 63.58248 
+L 18.081 120.46392 
+Q 18.081 127.94832 30.636 127.94832 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #2166ac; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 302.661 127.94832 
+L 523.629 127.94832 
+Q 536.184 127.94832 536.184 120.46392 
+L 536.184 63.58248 
+Q 536.184 56.09808 523.629 56.09808 
+L 302.661 56.09808 
+Q 290.106 56.09808 290.106 63.58248 
+L 290.106 120.46392 
+Q 290.106 127.94832 302.661 127.94832 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #2166ac; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 574.686 127.94832 
+L 820.764 127.94832 
+Q 833.319 127.94832 833.319 120.46392 
+L 833.319 63.58248 
+Q 833.319 56.09808 820.764 56.09808 
+L 574.686 56.09808 
+Q 562.131 56.09808 562.131 63.58248 
+L 562.131 120.46392 
+Q 562.131 127.94832 574.686 127.94832 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #2166ac; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 218.961 232.72992 
+L 632.439 232.72992 
+Q 644.994 232.72992 644.994 225.24552 
+L 644.994 168.36408 
+Q 644.994 160.87968 632.439 160.87968 
+L 218.961 160.87968 
+Q 206.406 160.87968 206.406 168.36408 
+L 206.406 225.24552 
+Q 206.406 232.72992 218.961 232.72992 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #008b70; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 30.636 362.45952 
+L 201.384 362.45952 
+Q 213.939 362.45952 213.939 354.97512 
+L 213.939 273.14568 
+Q 213.939 265.66128 201.384 265.66128 
+L 30.636 265.66128 
+Q 18.081 265.66128 18.081 273.14568 
+L 18.081 354.97512 
+Q 18.081 362.45952 30.636 362.45952 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #008b70; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 235.701 362.45952 
+L 406.449 362.45952 
+Q 419.004 362.45952 419.004 354.97512 
+L 419.004 273.14568 
+Q 419.004 265.66128 406.449 265.66128 
+L 235.701 265.66128 
+Q 223.146 265.66128 223.146 273.14568 
+L 223.146 354.97512 
+Q 223.146 362.45952 235.701 362.45952 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #008b70; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 440.766 362.45952 
+L 611.514 362.45952 
+Q 624.069 362.45952 624.069 354.97512 
+L 624.069 273.14568 
+Q 624.069 265.66128 611.514 265.66128 
+L 440.766 265.66128 
+Q 428.211 265.66128 428.211 273.14568 
+L 428.211 354.97512 
+Q 428.211 362.45952 440.766 362.45952 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #008b70; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 645.831 362.45952 
+L 816.579 362.45952 
+Q 829.134 362.45952 829.134 354.97512 
+L 829.134 273.14568 
+Q 829.134 265.66128 816.579 265.66128 
+L 645.831 265.66128 
+Q 633.276 265.66128 633.276 273.14568 
+L 633.276 354.97512 
+Q 633.276 362.45952 645.831 362.45952 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #008b70; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 218.961 472.23072 
+L 632.439 472.23072 
+Q 644.994 472.23072 644.994 464.74632 
+L 644.994 407.86488 
+Q 644.994 400.38048 632.439 400.38048 
+L 218.961 400.38048 
+Q 206.406 400.38048 206.406 407.86488 
+L 206.406 464.74632 
+Q 206.406 472.23072 218.961 472.23072 
+z
+" clip-path="url(#p3f8c9d776c)" style="fill: #eff4f7; stroke: #2166ac; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 22px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #17324d" x="23.94" y="27.1584" transform="rotate(-0 23.94 27.1584)">CASB family: training-time workflow</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(94.32875 87.358512)">Training partition</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(129.485781 102.758512)">only</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(350.383984 87.358512)">Fit imputation / scaling</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(341.998203 102.758512)">encode categorical inputs</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(629.677109 87.358512)">Compute local geometry</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(619.519297 102.758512)">coverage, border, rare pools</text>
+   </g>
+   <g id="patch_11">
+    <path d="M 257.113007 92.0232 
+Q 277.130305 92.0232 295.358748 92.0232 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 290.958748 89.8232 
+L 295.358748 92.0232 
+L 290.958748 94.2232 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 529.138007 92.0232 
+Q 549.155305 92.0232 567.383748 92.0232 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 562.983748 89.8232 
+L 567.383748 92.0232 
+L 562.983748 94.2232 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(247.318672 191.987144)">Target added count: max(0, ceil(ratio × n_majority) - n_minority)</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(268.22125 207.540112)">Integer branch quotas; sample sources with replacement</text>
+   </g>
+   <g id="patch_13">
+    <path d="M 694.85969 122.839249 
+Q 624.490153 144.413187 555.830899 165.462785 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 560.682492 166.27645 
+L 555.830899 165.462785 
+L 559.392786 162.06971 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(102.493594 303.700244)">CASB</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(87.1975 317.307275)">50 / 30 / 20</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(41.012344 330.819775)">Conditional interpolation caps</text>
+   </g>
+   <g id="patch_14">
+    <path d="M 422.727664 227.173402 
+Q 270.854777 249.195632 120.752228 270.961156 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 125.422395 272.50697 
+L 120.752228 270.961156 
+L 124.79098 268.152511 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 118.972885 356.949368 
+Q 270.855132 381.420021 420.971301 405.606131 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 416.977263 402.734257 
+L 420.971301 405.606131 
+L 416.277379 407.078237 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(287.223437 303.788525)">CASB-relaxed</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(292.2625 317.307275)">70 / 20 / 10</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(256.752344 330.819775)">Unrestricted interpolation</text>
+   </g>
+   <g id="patch_16">
+    <path d="M 422.944526 227.925085 
+Q 373.388521 249.195162 325.47635 269.759684 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 330.387367 270.045897 
+L 325.47635 269.759684 
+L 328.651931 266.002599 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 323.785773 357.764777 
+Q 373.388405 381.420432 421.376398 404.30606 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 418.351919 400.426302 
+L 421.376398 404.30606 
+L 416.457904 404.397789 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(494.968906 303.788525)">CASB-edited</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(497.3275 317.307275)">70 / 20 / 10</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(454.975937 330.819775)">Unrestricted + majority ENN</text>
+   </g>
+   <g id="patch_18">
+    <path d="M 428.437211 227.966198 
+Q 475.918536 249.194945 521.766797 269.693555 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 518.647941 265.88925 
+L 521.766797 269.693555 
+L 516.852039 269.906057 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 523.451832 357.807412 
+Q 475.919825 381.420087 429.989879 404.236899 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 434.909212 404.24961 
+L 429.989879 404.236899 
+L 432.951648 400.309059 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(705.300313 303.700244)">CASB-ROS</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(702.3925 317.307275)">50 / 30 / 20</text>
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(663.890156 330.819775)">Duplicate selected sources</text>
+   </g>
+   <g id="patch_20">
+    <path d="M 428.669462 227.178883 
+Q 578.453082 249.195686 726.466866 270.952338 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 722.433584 268.135843 
+L 726.466866 270.952338 
+L 721.793701 272.489066 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 728.244861 356.955459 
+Q 578.452009 381.42008 430.424619 405.596361 
+" style="fill: none; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 435.121696 407.058369 
+L 430.424619 405.596361 
+L 434.412472 402.715904 
+z
+" style="fill: #9ba6b0; stroke: #9ba6b0; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(280.342734 431.640913)">Fit SVM, KNN, RF or LR on the resampled training set</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #17324d" transform="translate(308.690078 448.106538)">Evaluate untouched held-out observations</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #17324d" x="28.125" y="498.6756" transform="rotate(-0 28.125 498.6756)">Ratios are chosen by inner training validation; resampling and PCA never use held-out test observations.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p3f8c9d776c">
+   <rect x="7.2" y="7.2" width="837" height="498.96"/>
+  </clipPath>
+ </defs>
+</svg>

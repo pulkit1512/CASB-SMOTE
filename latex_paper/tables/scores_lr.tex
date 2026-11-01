@@ -1,0 +1,17 @@
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{LR: equal-weight means on 40 matched datasets (percent). Each dataset score averages five supplied folds and two seeds.}\label{tab:scores_lr}
+\begin{tabular}{lrrrr}\toprule
+Method & G-mean & F1 & Precision & Recall \\
+\midrule
+No resampling & 59.700 & 53.745 & 67.216 & 48.167 \\
+SMOTE & 83.943 & 63.749 & 57.216 & 79.978 \\
+B-SMOTE & 82.540 & 63.157 & 56.079 & 78.533 \\
+ROS & 84.139 & 63.734 & 57.317 & 80.386 \\
+ADASYN & 84.084 & 62.879 & 55.337 & 80.997 \\
+CASB & 83.235 & 63.998 & 58.205 & 78.232 \\
+CASB-relaxed & 83.609 & 64.027 & 57.756 & 79.477 \\
+CASB-edited & 84.284 & 63.207 & 55.311 & 82.250 \\
+CASB-ROS & 83.510 & 64.112 & 58.122 & 78.832 \\
+\bottomrule\end{tabular}
+\end{table}

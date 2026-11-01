@@ -1,0 +1,1463 @@
+[
+  {
+    "kind": "cover",
+    "title": "CASB family",
+    "section": "Research presentation",
+    "notes": "Good morning. Our project is about learning from data where one class has far fewer examples than the other. We call the smaller class the minority class. Our method, CASB, adds examples for this class. I will explain how it works, compare it with other methods, and show both its strengths and limitations.",
+    "source": "latex_paper/manuscript.tex",
+    "subtitle": "Coverage-aware oversampling for binary classification",
+    "authors": "Pulkit Sharma   •   Priyanshu Kumar   •   Niranjan Yadav",
+    "affiliation": "Department of Artificial Intelligence\nSVNIT, Surat"
+  },
+  {
+    "kind": "problem",
+    "title": "High accuracy can hide missed minority cases",
+    "section": "01  Problem and objectives",
+    "notes": "Imagine we have 100 examples. Ninety-five belong to one class and only five belong to the other. If a model always predicts the bigger class, it gets 95 answers right. But it misses every example from the smaller class. This is why high accuracy alone can be misleading. We want to find more minority cases without making too many wrong predictions. These numbers are an example, not an experiment result.",
+    "source": "latex_paper/manuscript.tex",
+    "values": [
+      "95%",
+      "0%"
+    ],
+    "labels": [
+      "Accuracy",
+      "Minority recall"
+    ],
+    "take": "Illustrative 95:5 dataset: always predicting the majority misses every minority case.",
+    "bullets": [
+      "100 observations: 95 majority and only 5 minority",
+      "Predict majority for every case: 95 correct, but all 5 minority cases missed",
+      "Goal: detect minority cases while controlling false positives"
+    ]
+  },
+  {
+    "kind": "bullets",
+    "title": "Research objectives",
+    "section": "01  Problem and objectives",
+    "notes": "We have two main aims. First, we want to reduce confusion where the two classes are close together. Second, we want to support minority regions that have very few examples. This second problem is called intra-class imbalance: even inside the smaller class, some areas have many points and others have few. We also compare our versions across different models and scores. These are our aims; we do not claim to solve these problems completely.",
+    "source": "latex_paper/manuscript.tex",
+    "bullets": [
+      "Reduce confusion near minority-majority class boundaries",
+      "Address intra-class imbalance across dense and sparse minority regions",
+      "Compare CASB variants and their precision-recall tradeoffs",
+      "Evaluate performance across datasets and classifiers"
+    ],
+    "take": "Aim: support difficult boundary regions and sparsely represented minority regions."
+  },
+  {
+    "kind": "table",
+    "title": "Established resampling methods",
+    "section": "02  Literature review",
+    "notes": "ROS copies existing minority examples. SMOTE makes new points between two nearby minority points. Borderline-SMOTE focuses on minority points near mixed-class areas. ADASYN adds more points around cases that look difficult. Each choice has a weakness. For example, a difficult point might be useful, but it might also have a wrong label. Our method studies how to share the new points across different minority regions.",
+    "source": "references.bib: chawla2002, han2005, he2008",
+    "headers": [
+      "Method",
+      "Main action",
+      "Relevant limitation"
+    ],
+    "rows": [
+      [
+        "ROS",
+        "Repeat minority samples",
+        "Can repeat unreliable labels"
+      ],
+      [
+        "SMOTE",
+        "Interpolate between neighbours",
+        "May cross majority regions"
+      ],
+      [
+        "Borderline-SMOTE",
+        "Focus on danger sources",
+        "Other sources receive no direct quota"
+      ],
+      [
+        "ADASYN",
+        "Weight locally difficult sources",
+        "Difficulty can also reflect noise"
+      ]
+    ],
+    "widths": [
+      0.21,
+      0.36,
+      0.43
+    ],
+    "take": "Local difficulty and reliable labels are different questions.",
+    "insight": "CASB asks: can broad source eligibility coexist with targeted generation?"
+  },
+  {
+    "kind": "table",
+    "title": "Closest ideas in previous work",
+    "section": "02  Literature review",
+    "notes": "Earlier studies already looked at safe, boundary and sparse minority regions. Other methods changed where new points could be placed, or used model uncertainty to guide sampling. CASB builds on these ideas. Our focus is the particular way we combine source groups, generation rules and cleaning. We have not directly compared against every close earlier method, so that is still future work.",
+    "source": "references.bib: safe2009, geometric2019, napierala2016, skryjomski2017, lne2024, saglam2026",
+    "headers": [
+      "Prior approach",
+      "Connection to CASB"
+    ],
+    "rows": [
+      [
+        "Minority instance types",
+        "Safe, borderline, rare and outlier structure"
+      ],
+      [
+        "Safe-Level / Geometric SMOTE",
+        "Local information guides synthetic generation"
+      ],
+      [
+        "LNE",
+        "Neighbourhood types control resampling intensity"
+      ],
+      [
+        "UGO",
+        "Shared framework with different generators"
+      ]
+    ],
+    "widths": [
+      0.38,
+      0.62
+    ],
+    "take": "CASB studies a particular combination of source allocation and generation rules.",
+    "insight": "The contribution lies in the implemented combination, not in discovering minority types."
+  },
+  {
+    "kind": "numbers",
+    "title": "Benchmark scope",
+    "section": "03  Data and evaluation",
+    "notes": "We collected 44 binary classification tasks. Binary means there are two classes. We used four classifiers. Four tasks had incomplete ADASYN results, so the main comparison uses the same 40 complete tasks for every method. Each task uses five supplied train-test splits and two random seeds. For Abalone, we changed the Sex category into numeric columns using only the training data. We kept failed runs visible instead of replacing them with guessed scores.",
+    "source": "latex_paper/manuscript.tex",
+    "values": [
+      "44",
+      "40",
+      "4"
+    ],
+    "labels": [
+      "Binary KEEL tasks",
+      "Complete matched tasks",
+      "Classifiers"
+    ],
+    "bullets": [
+      "Five supplied folds and two seeds",
+      "Abalone categorical feature: training-fitted one-hot encoding",
+      "52 failed ADASYN evaluations remain explicit"
+    ],
+    "take": "Examples: Ecoli, Glass, Yeast, Abalone, Pima and Haberman"
+  },
+  {
+    "kind": "table",
+    "title": "Four classifier families",
+    "section": "03 Data and evaluation",
+    "notes": "We use four different classifiers. SVM learns a boundary between classes. KNN predicts from nearby examples. Random forest combines many decision trees. Logistic regression learns a simpler linear decision rule. Testing different classifiers helps us see whether a result depends on the model. We use the same outer train-test splits for a fair comparison.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Classifier",
+      "Configuration",
+      "What it learns"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "RBF kernel, C = 1",
+        "A nonlinear margin"
+      ],
+      [
+        "KNN",
+        "7 neighbours, distance weights",
+        "Local class structure"
+      ],
+      [
+        "Random forest",
+        "100 trees, minimum leaf size 2",
+        "Tree splits and class proportions"
+      ],
+      [
+        "Logistic regression",
+        "Maximum 3,000 iterations",
+        "A linear decision score"
+      ]
+    ],
+    "widths": [
+      0.25,
+      0.4,
+      0.35
+    ],
+    "take": "Same outer partitions and training-only ratio selection"
+  },
+  {
+    "kind": "table",
+    "title": "Four metrics describe different costs",
+    "section": "03 Data and evaluation",
+    "notes": "Recall asks: of all real minority cases, how many did we find? Precision asks: of the cases we called minority, how many were correct? F1 combines precision and recall into one score. G-mean checks how well we detect both classes. Higher is better for each score here. We show all four because improving recall can sometimes reduce precision.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Metric",
+      "Interpretation"
+    ],
+    "rows": [
+      [
+        "G-mean",
+        "Balance detection across both classes"
+      ],
+      [
+        "F1",
+        "Balance minority precision and recall"
+      ],
+      [
+        "Precision",
+        "How many predicted minority cases are correct?"
+      ],
+      [
+        "Recall",
+        "How many true minority cases are detected?"
+      ]
+    ],
+    "widths": [
+      0.25,
+      0.75
+    ],
+    "take": "No composite score hides a precision–recall tradeoff.",
+    "insight": "High recall alone is insufficient: check precision and F1 alongside G-mean."
+  },
+  {
+    "kind": "plot",
+    "title": "CASB workflow",
+    "section": "04  Proposed method",
+    "notes": "This picture shows the complete process. Start with training data, prepare the features, and measure the neighbourhood around minority points. Next, form three source groups and decide how many new points each group should produce. Choose a CASB version, make the new training set, and train the classifier. The test data is used only at the end to measure performance.",
+    "source": "paper_material/02_casb_family_workflow.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\02_casb_family_workflow.png",
+    "take": "Allocation depends on neighbourhood geometry, not classifier uncertainty."
+  },
+  {
+    "kind": "flow",
+    "title": "CASB: choose where to start and how far to move",
+    "section": "04  Proposed method",
+    "notes": "CASB means Coverage-Aware Safe-Border SMOTE. It makes two main choices. First: which minority point should we start from? Second: how far should we move toward another minority point? We use three groups to answer the first question. For some groups, the distance to the majority class limits the second choice. The word safe describes our intention. It does not mean every new point is guaranteed to have the right label.",
+    "source": "latex_paper/manuscript.tex",
+    "steps": [
+      "Measure local structure",
+      "Build source pools",
+      "Allocate additions",
+      "Generate new points"
+    ],
+    "details": [
+      "Labels and distances",
+      "Coverage / border / rare",
+      "50% / 30% / 20%",
+      "Select source, neighbour and step"
+    ],
+    "take": "Two decisions: which minority point to use, and how far to interpolate."
+  },
+  {
+    "kind": "table",
+    "title": "Step 1: identify useful minority sources",
+    "section": "04  Proposed method",
+    "notes": "For each minority point, we look at nearby training points. Coverage contains every minority point. Border contains points with a mixture of nearby majority and minority examples. Rare contains points whose minority neighbours are relatively far away. Border and rare also need enough nearby minority support. The groups can overlap: the same point may be in more than one group. Rare here means locally sparse, not a proven separate rare cluster.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Pool",
+      "Selection rule",
+      "Purpose"
+    ],
+    "rows": [
+      [
+        "Coverage (C)",
+        "Every minority observation",
+        "Keep broad source eligibility"
+      ],
+      [
+        "Border (B)",
+        "20% < majority fraction <= 70%",
+        "Focus on locally mixed regions"
+      ],
+      [
+        "Rare (R)",
+        "Minority distance in top quartile",
+        "Include sparse minority regions"
+      ]
+    ],
+    "widths": [
+      0.22,
+      0.44,
+      0.34
+    ],
+    "take": "Border and rare also require at least 2 minority neighbours and positive majority distance.",
+    "insight": "Pools overlap: one minority observation can belong to coverage, border and rare."
+  },
+  {
+    "kind": "table",
+    "title": "Exact conditions for the three source pools",
+    "section": "04  Proposed method",
+    "source": "latex_paper/manuscript.tex: Proposed method",
+    "headers": [
+      "Symbol / rule",
+      "Formula or value",
+      "Meaning"
+    ],
+    "rows": [
+      [
+        "Coverage C",
+        "C = M",
+        "Every minority point"
+      ],
+      [
+        "Border B",
+        "B = {i ∈ M : 0.2 < oᵢ ≤ 0.7,\nsᵢ ≥ 2, dᵢ > 0}",
+        "Mixed neighbourhood\nwith minority support"
+      ],
+      [
+        "Rare R",
+        "R = {i ∈ M : qᵢ ≥ Q₀.₇₅(q),\nsᵢ ≥ 2, dᵢ > 0}",
+        "Sparse neighbourhood\nwith minority support"
+      ]
+    ],
+    "widths": [
+      0.2,
+      0.45,
+      0.35
+    ],
+    "notes": "Coverage has no extra filter: every minority point is eligible. Border requires more than twenty percent and at most seventy percent majority neighbours. It also needs at least two minority neighbours and a positive distance to the nearest majority point. Rare uses the seventy-fifth percentile of q as its threshold, with the same support and distance checks. Points exactly at that threshold are included. The groups overlap; they are not three separate classes. Coverage can still include noisy minority points. Symbol guide: M = minority indices; oᵢ = majority fraction; sᵢ = minority support; dᵢ = majority distance; qᵢ = sparsity distance. Q₀.₇₅ = 75th percentile.",
+    "take": "M = minority indices; oᵢ = majority fraction; sᵢ = minority support; dᵢ = majority distance; qᵢ = sparsity distance. Q₀.₇₅ = 75th percentile.",
+    "take_size": 14
+  },
+  {
+    "kind": "plot",
+    "title": "Three overlapping source pools",
+    "section": "04  Proposed method",
+    "notes": "The rings show which original points can be selected from each group. They are not new points. Coverage includes all minority points. Border focuses on mixed areas. Rare focuses on sparse areas. The same source can belong to several groups. Notice that being eligible does not guarantee a point will actually be selected.",
+    "source": "paper_material/04_source_pools.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\04_source_pools.png",
+    "take": "Coverage includes every minority observation. Border and rare pools may overlap."
+  },
+  {
+    "kind": "table",
+    "title": "Budget, weights and exact integer allocation",
+    "section": "04  Proposed method",
+    "source": "latex_paper/manuscript.tex: Proposed method",
+    "headers": [
+      "Symbol / rule",
+      "Formula or value",
+      "Meaning"
+    ],
+    "rows": [
+      [
+        "Added samples",
+        "G = max(0, ⌈ρ nⱼ⌉ − nₘ)",
+        "ρ = target minority / majority ratio"
+      ],
+      [
+        "Original / ROS",
+        "(wC, wB, wR) = (0.50, 0.30, 0.20)",
+        "Coverage / border / rare"
+      ],
+      [
+        "Relaxed / edited",
+        "(wC, wB, wR) = (0.70, 0.20, 0.10)",
+        "More coverage allocation"
+      ],
+      [
+        "Initial quota",
+        "aᵦ = ⌊wᵦG⌋; remainder = G − Σᵦ aᵦ",
+        "Add remaining units by largest fractions"
+      ]
+    ],
+    "widths": [
+      0.2,
+      0.45,
+      0.35
+    ],
+    "notes": "The target ratio rho tells us how many minority points we want compared with majority points. Multiply rho by the majority count, round up, then subtract the current minority count. Never add a negative number. Multiply this budget by each branch weight and round down first. Give leftover units to the largest fractional remainders. Ties use coverage, border, rare order. Training validation chooses rho from 0.5, 0.75 and 1.0. These branch weights and thresholds are fixed design choices. Symbol guide: G = additions; ρ = target ratio; nₘ / nⱼ = minority / majority counts; b = branch; wᵦ = weight; aᵦ = quota. ⌈ ⌉ rounds up; ⌊ ⌋ rounds down.",
+    "take": "G = additions; ρ = target ratio; nₘ / nⱼ = minority / majority counts; b = branch; wᵦ = weight; aᵦ = quota. ⌈ ⌉ rounds up; ⌊ ⌋ rounds down.",
+    "take_size": 14
+  },
+  {
+    "kind": "numbers",
+    "title": "Step 2: divide the generation budget",
+    "section": "04  Proposed method",
+    "notes": "Here is a small example. We have 100 majority points and 20 minority points. We want 75 minority points, so we need 55 new ones. Original CASB gives 28 additions to coverage, 16 to border and 11 to rare. These come from the 50, 30 and 20 percent weights, with rounding. We randomly choose sources within each group, and a source can be chosen again. If border or rare is empty, we choose from coverage but keep the original branch rule.",
+    "source": "latex_paper/manuscript.tex",
+    "values": [
+      "28",
+      "16",
+      "11"
+    ],
+    "labels": [
+      "Coverage additions",
+      "Border additions",
+      "Rare additions"
+    ],
+    "bullets": [
+      "Example: 100 majority + 20 minority; target ratio = 0.75",
+      "Need 55 additions; original quotas = 50 / 30 / 20",
+      "Choose sources uniformly within each pool, with replacement"
+    ],
+    "take": "The quotas divide new samples, not the original minority observations."
+  },
+  {
+    "kind": "table",
+    "title": "Step 3: limit movement using majority distance",
+    "section": "04  Proposed method",
+    "notes": "After choosing a source, we choose a nearby minority point. Usually we choose among up to five neighbours; the rare branch uses up to two. Let d be the distance to the closest majority point. A normal limited step can move at most half of d. A rare step can move at most 0.35 times d. Coverage points with very few majority neighbours can use the full line. For example, if d is two, the normal limited move is at most one unit. This limits movement but does not prove the new label is correct.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Allocated branch",
+      "Maximum movement from source"
+    ],
+    "rows": [
+      [
+        "Coverage; majority fraction <= 20%",
+        "Full source-to-neighbour segment"
+      ],
+      [
+        "Rare branch",
+        "Smaller of segment length and 0.35 x d"
+      ],
+      [
+        "Other coverage / border steps",
+        "Smaller of segment length and 0.50 x d"
+      ]
+    ],
+    "widths": [
+      0.49,
+      0.51
+    ],
+    "take": "d = distance to the nearest observed majority point; a cap does not certify the label.",
+    "insight": "Example: neighbour distance = 4, majority distance = 2; ordinary capped movement <= 1."
+  },
+  {
+    "kind": "plot",
+    "title": "The interpolation rule",
+    "section": "04  Proposed method",
+    "notes": "The new point lies on a straight line from the source to its chosen neighbour. Lambda tells us how far along that line to move. Zero means stay at the source, and one means reach the neighbour. SMOTE can use the whole line. Original CASB shortens the allowed part for some branches. Relaxed allows the whole line again. CASB-ROS stays at the source and makes a copy.",
+    "source": "paper_material/03_interpolation_geometry.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\03_interpolation_geometry.png",
+    "take": "z = new point; xₛ = source; xₜ = neighbour; λ = step fraction. L = neighbour distance; d = nearest-majority distance; c = cap factor.",
+    "take_size": 14
+  },
+  {
+    "kind": "table",
+    "title": "Generate a point: formula and branch limits",
+    "section": "04  Proposed method",
+    "source": "latex_paper/manuscript.tex: Proposed method",
+    "headers": [
+      "Symbol / rule",
+      "Formula or value",
+      "Meaning"
+    ],
+    "rows": [
+      [
+        "Neighbour t",
+        "t ∈ Kₛ; rare uses first min(2, |Kₛ|)",
+        "Choose uniformly"
+      ],
+      [
+        "New point",
+        "L = ‖xₜ − xₛ‖₂; z = xₛ + λ(xₜ − xₛ)",
+        "L = source-to-neighbour distance\nλ ∼ Uniform(0, λmax)"
+      ],
+      [
+        "Zero edge",
+        "λmax = 0 if L = 0",
+        "Repeat source coordinates"
+      ],
+      [
+        "Coverage exception",
+        "λmax = 1 if b = C and oₛ ≤ 0.2",
+        "Full segment allowed"
+      ],
+      [
+        "Rare / other",
+        "Rare: min(1, 0.35 dₛ/L)\nOtherwise: min(1, 0.50 dₛ/L)",
+        "Apply after the zero-edge case"
+      ]
+    ],
+    "widths": [
+      0.2,
+      0.45,
+      0.35
+    ],
+    "notes": "Choose a source s and a minority neighbour t. L is the distance between them. Lambda is a random fraction of the allowed move, and z is the new point. A zero-length edge copies the source. Coverage with at most twenty percent majority neighbours allows the whole line. A rare step is limited by 0.35 times the nearest-majority distance. Other capped steps use 0.50. Both limits stop at the selected neighbour. For L equal to four and d s equal to two, the ordinary maximum lambda is 0.25 and the rare maximum is 0.175. Symbol guide: s = source; t = neighbour; L = source-to-neighbour distance; z = new point; λ = step fraction; λmax = upper limit; dₛ = nearest-majority distance; oₛ = majority fraction; b = branch.",
+    "take": "s = source; t = neighbour; L = source-to-neighbour distance; z = new point; λ = step fraction; λmax = upper limit; dₛ = nearest-majority distance; oₛ = majority fraction; b = branch.",
+    "take_size": 14
+  },
+  {
+    "kind": "table",
+    "title": "Four CASB variants",
+    "section": "04  Proposed method",
+    "notes": "This table puts the four versions side by side. C, B and R mean coverage, border and rare. The percentages tell us how to divide new additions, not how many original points belong to each group. Original CASB and CASB-ROS use the same weights. Relaxed and edited use different weights. Because relaxed changes both the weights and movement limits, we cannot say which change alone caused a result.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Variant",
+      "C / B / R quota",
+      "Generation",
+      "Cleaning"
+    ],
+    "rows": [
+      [
+        "CASB",
+        "50 / 30 / 20",
+        "Conditional cap",
+        "None"
+      ],
+      [
+        "CASB-relaxed",
+        "70 / 20 / 10",
+        "Full segment",
+        "None"
+      ],
+      [
+        "CASB-edited",
+        "70 / 20 / 10",
+        "Full segment",
+        "Majority-only ENN"
+      ],
+      [
+        "CASB-ROS",
+        "50 / 30 / 20",
+        "Exact duplication",
+        "None"
+      ]
+    ],
+    "widths": [
+      0.25,
+      0.23,
+      0.26,
+      0.26
+    ],
+    "take": "Quotas allocate generated samples, not disjoint fractions of the original data."
+  },
+  {
+    "kind": "plot",
+    "title": "What resampling changes",
+    "section": "04  Proposed method",
+    "notes": "First look at the original data, then compare the other panels. SMOTE and the CASB interpolation versions add new locations. CASB-ROS adds copies at existing locations. Edited also removes some majority points. This is a constructed example to explain the process. It is not a real benchmark dataset and does not by itself show which method predicts best.",
+    "source": "paper_material/14_final_distribution_panels.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\14_final_distribution_panels.png",
+    "take": "Same constructed input, seed and ratio. Grey crosses mark removed majority points."
+  },
+  {
+    "kind": "plot",
+    "title": "Generation can be audited",
+    "section": "04  Proposed method",
+    "notes": "For a new point, we can check which source and neighbour were used, which group selected the source, and how far the point moved. This makes the generation process easier to inspect. The red-marked error was deliberately placed in this example. CASB did not discover that error. The figure shows that we can trace the process; it does not show that we can reliably detect noise.",
+    "source": "paper_material/13_audited_generation_walkthrough.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\13_audited_generation_walkthrough.png",
+    "take": "Source, neighbour, branch and interpolation step can be traced for each new point."
+  },
+  {
+    "kind": "plot",
+    "title": "A real-data view: Abalone19",
+    "section": "04  Proposed method",
+    "notes": "This is the Abalone19 plot from our paper. Grey dots are original majority points and blue dots are original minority points. Orange triangles are new points. Green rings show added copies. Start with the original panel, then compare SMOTE, Borderline-SMOTE and our four versions. PCA lets us show many features in just two directions. The method still generates in the full feature space. Because a category was encoded as numbers, some generated values can fall between category codes. This picture alone cannot prove that a method is better.",
+    "source": "paper plot/abalone19_PCA_comparison.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper plot\\abalone19_PCA_comparison.png",
+    "take": "Original training data and resampled views share the same PCA axes."
+  },
+  {
+    "kind": "table",
+    "title": "Average scores across the benchmark",
+    "section": "05  Results and comparison",
+    "notes": "This table gives the average score of each method across the same 40 datasets and four classifiers. Here the scores are percentages. Each dataset and classifier receives equal weight. Edited has strong G-mean and recall averages, but that comes with lower precision. Different versions lead on different scores. There is no single version that is best for every goal.",
+    "source": "statistical result/average_metric_scores.csv: strict_all_methods, SVM/KNN/RF/LR",
+    "headers": [
+      "Method",
+      "G-mean",
+      "F1",
+      "Precision",
+      "Recall"
+    ],
+    "rows": [
+      [
+        "ROS",
+        "80.922",
+        "65.668",
+        "62.595",
+        "75.138"
+      ],
+      [
+        "SMOTE",
+        "81.354",
+        "65.704",
+        "62.261",
+        "75.618"
+      ],
+      [
+        "Borderline-SMOTE",
+        "79.519",
+        "64.806",
+        "61.005",
+        "74.100"
+      ],
+      [
+        "ADASYN",
+        "81.518",
+        "64.400",
+        "59.440",
+        "76.742"
+      ],
+      [
+        "CASB",
+        "80.329",
+        "66.056",
+        "63.676",
+        "73.976"
+      ],
+      [
+        "CASB-relaxed",
+        "81.060",
+        "65.908",
+        "62.669",
+        "75.096"
+      ],
+      [
+        "CASB-edited",
+        "82.411",
+        "65.084",
+        "59.368",
+        "78.720"
+      ],
+      [
+        "CASB-ROS",
+        "80.172",
+        "65.959",
+        "63.657",
+        "73.950"
+      ]
+    ],
+    "widths": [
+      0.32,
+      0.17,
+      0.17,
+      0.17,
+      0.17
+    ],
+    "take": "40 matched datasets × 4 classifiers; equal weights; scores in percent",
+    "small": true
+  },
+  {
+    "kind": "table",
+    "title": "Table 6 | G-mean by classifier",
+    "section": "05  Results and comparison",
+    "notes": "This is the G-mean part of Table 6 from our paper. It measures how well both classes are detected. Read one classifier row at a time and compare the methods across that row. Scores here run from zero to one, so 0.8 means 80 percent. The coloured bold cell is the winner based on the full unrounded score. Two displayed values can look equal because we round them. NORES means no resampling. The last rows average classifiers equally. All methods use the same 40 complete datasets. These averages do not by themselves prove a statistically significant difference.",
+    "source": "latex_paper/manuscript.tex: Table 6, benchmark_comparison",
+    "headers": [
+      "Classifier",
+      "NORES",
+      "ROS",
+      "SMOTE",
+      "B-SMOTE",
+      "ADASYN",
+      "CASB",
+      "CASB\nrelaxed",
+      "CASB\nedited",
+      "CASB\nROS"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "0.592",
+        "0.826",
+        "0.816",
+        "0.797",
+        "0.815",
+        "0.805",
+        "0.814",
+        "0.826",
+        "0.810"
+      ],
+      [
+        "KNN",
+        "0.658",
+        "0.817",
+        "0.827",
+        "0.819",
+        "0.832",
+        "0.821",
+        "0.824",
+        "0.834",
+        "0.810"
+      ],
+      [
+        "RF",
+        "0.645",
+        "0.752",
+        "0.772",
+        "0.740",
+        "0.773",
+        "0.755",
+        "0.769",
+        "0.793",
+        "0.752"
+      ],
+      [
+        "LR",
+        "0.597",
+        "0.841",
+        "0.839",
+        "0.825",
+        "0.841",
+        "0.832",
+        "0.836",
+        "0.843",
+        "0.835"
+      ],
+      [
+        "SVM/KNN",
+        "0.625",
+        "0.822",
+        "0.822",
+        "0.808",
+        "0.823",
+        "0.813",
+        "0.819",
+        "0.830",
+        "0.810"
+      ],
+      [
+        "Overall",
+        "0.623",
+        "0.809",
+        "0.814",
+        "0.795",
+        "0.815",
+        "0.803",
+        "0.811",
+        "0.824",
+        "0.802"
+      ]
+    ],
+    "bold_cells": [
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    "widths": [
+      0.14,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556
+    ],
+    "small": true,
+    "take": "40 matched datasets | Scores: 0 to 1 | Highlighted cells: row winners | NORES: no resampling"
+  },
+  {
+    "kind": "table",
+    "title": "Table 6 | F1 by classifier",
+    "section": "05  Results and comparison",
+    "notes": "This is the F1 part of Table 6 from our paper. It measures the balance between minority precision and recall. Read one classifier row at a time and compare the methods across that row. Scores here run from zero to one, so 0.8 means 80 percent. The coloured bold cell is the winner based on the full unrounded score. Two displayed values can look equal because we round them. NORES means no resampling. The last rows average classifiers equally. All methods use the same 40 complete datasets. These averages do not by themselves prove a statistically significant difference.",
+    "source": "latex_paper/manuscript.tex: Table 6, benchmark_comparison",
+    "headers": [
+      "Classifier",
+      "NORES",
+      "ROS",
+      "SMOTE",
+      "B-SMOTE",
+      "ADASYN",
+      "CASB",
+      "CASB\nrelaxed",
+      "CASB\nedited",
+      "CASB\nROS"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "0.547",
+        "0.670",
+        "0.666",
+        "0.656",
+        "0.647",
+        "0.673",
+        "0.671",
+        "0.661",
+        "0.674"
+      ],
+      [
+        "KNN",
+        "0.604",
+        "0.644",
+        "0.646",
+        "0.647",
+        "0.632",
+        "0.654",
+        "0.646",
+        "0.634",
+        "0.644"
+      ],
+      [
+        "RF",
+        "0.594",
+        "0.676",
+        "0.679",
+        "0.658",
+        "0.668",
+        "0.676",
+        "0.679",
+        "0.676",
+        "0.678"
+      ],
+      [
+        "LR",
+        "0.537",
+        "0.637",
+        "0.637",
+        "0.632",
+        "0.629",
+        "0.640",
+        "0.640",
+        "0.632",
+        "0.641"
+      ],
+      [
+        "SVM/KNN",
+        "0.575",
+        "0.657",
+        "0.656",
+        "0.651",
+        "0.639",
+        "0.663",
+        "0.659",
+        "0.648",
+        "0.659"
+      ],
+      [
+        "Overall",
+        "0.570",
+        "0.657",
+        "0.657",
+        "0.648",
+        "0.644",
+        "0.661",
+        "0.659",
+        "0.651",
+        "0.660"
+      ]
+    ],
+    "bold_cells": [
+      [
+        2,
+        10
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        5,
+        10
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        7
+      ]
+    ],
+    "widths": [
+      0.14,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556
+    ],
+    "small": true,
+    "take": "40 matched datasets | Scores: 0 to 1 | Highlighted cells: row winners | NORES: no resampling"
+  },
+  {
+    "kind": "table",
+    "title": "Table 6 | Precision by classifier",
+    "section": "05  Results and comparison",
+    "notes": "This is the Precision part of Table 6 from our paper. It measures how often a minority prediction is correct. Read one classifier row at a time and compare the methods across that row. Scores here run from zero to one, so 0.8 means 80 percent. The coloured bold cell is the winner based on the full unrounded score. Two displayed values can look equal because we round them. NORES means no resampling. The last rows average classifiers equally. All methods use the same 40 complete datasets. These averages do not by themselves prove a statistically significant difference.",
+    "source": "latex_paper/manuscript.tex: Table 6, benchmark_comparison",
+    "headers": [
+      "Classifier",
+      "NORES",
+      "ROS",
+      "SMOTE",
+      "B-SMOTE",
+      "ADASYN",
+      "CASB",
+      "CASB\nrelaxed",
+      "CASB\nedited",
+      "CASB\nROS"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "0.666",
+        "0.633",
+        "0.634",
+        "0.615",
+        "0.600",
+        "0.652",
+        "0.643",
+        "0.612",
+        "0.653"
+      ],
+      [
+        "KNN",
+        "0.700",
+        "0.586",
+        "0.590",
+        "0.582",
+        "0.559",
+        "0.599",
+        "0.591",
+        "0.561",
+        "0.592"
+      ],
+      [
+        "RF",
+        "0.706",
+        "0.711",
+        "0.694",
+        "0.682",
+        "0.665",
+        "0.713",
+        "0.696",
+        "0.649",
+        "0.720"
+      ],
+      [
+        "LR",
+        "0.672",
+        "0.573",
+        "0.572",
+        "0.561",
+        "0.553",
+        "0.582",
+        "0.578",
+        "0.553",
+        "0.581"
+      ],
+      [
+        "SVM/KNN",
+        "0.683",
+        "0.610",
+        "0.612",
+        "0.599",
+        "0.580",
+        "0.626",
+        "0.617",
+        "0.586",
+        "0.622"
+      ],
+      [
+        "Overall",
+        "0.686",
+        "0.626",
+        "0.623",
+        "0.610",
+        "0.594",
+        "0.637",
+        "0.627",
+        "0.594",
+        "0.637"
+      ]
+    ],
+    "bold_cells": [
+      [
+        2,
+        2
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        10
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        6,
+        2
+      ],
+      [
+        7,
+        2
+      ]
+    ],
+    "widths": [
+      0.14,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556
+    ],
+    "small": true,
+    "take": "40 matched datasets | Scores: 0 to 1 | Highlighted cells: row winners | NORES: no resampling"
+  },
+  {
+    "kind": "table",
+    "title": "Table 6 | Recall by classifier",
+    "section": "05  Results and comparison",
+    "notes": "This is the Recall part of Table 6 from our paper. It measures how many real minority cases we find. Read one classifier row at a time and compare the methods across that row. Scores here run from zero to one, so 0.8 means 80 percent. The coloured bold cell is the winner based on the full unrounded score. Two displayed values can look equal because we round them. NORES means no resampling. The last rows average classifiers equally. All methods use the same 40 complete datasets. These averages do not by themselves prove a statistically significant difference.",
+    "source": "latex_paper/manuscript.tex: Table 6, benchmark_comparison",
+    "headers": [
+      "Classifier",
+      "NORES",
+      "ROS",
+      "SMOTE",
+      "B-SMOTE",
+      "ADASYN",
+      "CASB",
+      "CASB\nrelaxed",
+      "CASB\nedited",
+      "CASB\nROS"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "0.497",
+        "0.769",
+        "0.757",
+        "0.741",
+        "0.764",
+        "0.744",
+        "0.752",
+        "0.785",
+        "0.750"
+      ],
+      [
+        "KNN",
+        "0.562",
+        "0.762",
+        "0.778",
+        "0.774",
+        "0.800",
+        "0.762",
+        "0.770",
+        "0.806",
+        "0.749"
+      ],
+      [
+        "RF",
+        "0.549",
+        "0.670",
+        "0.689",
+        "0.665",
+        "0.696",
+        "0.670",
+        "0.687",
+        "0.735",
+        "0.671"
+      ],
+      [
+        "LR",
+        "0.482",
+        "0.804",
+        "0.800",
+        "0.785",
+        "0.810",
+        "0.782",
+        "0.795",
+        "0.822",
+        "0.788"
+      ],
+      [
+        "SVM/KNN",
+        "0.529",
+        "0.766",
+        "0.768",
+        "0.757",
+        "0.782",
+        "0.753",
+        "0.761",
+        "0.796",
+        "0.750"
+      ],
+      [
+        "Overall",
+        "0.522",
+        "0.751",
+        "0.756",
+        "0.741",
+        "0.767",
+        "0.740",
+        "0.751",
+        "0.787",
+        "0.739"
+      ]
+    ],
+    "bold_cells": [
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    "widths": [
+      0.14,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556,
+      0.09555555555555556
+    ],
+    "small": true,
+    "take": "40 matched datasets | Scores: 0 to 1 | Highlighted cells: row winners | NORES: no resampling"
+  },
+  {
+    "kind": "plot",
+    "title": "Performance varies by metric",
+    "section": "05  Results and comparison",
+    "notes": "Each coloured cell shows the average score of a CASB version minus a baseline score. A positive value means the CASB version scored higher. A negative value means it scored lower. This helps us see the tradeoffs. Do not look only at the positive cells: losses matter too. These are average differences, not statistical test results.",
+    "source": "paper_material/06_average_score_differences.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\06_average_score_differences.png",
+    "take": "Positive differences favour the named CASB variant; negative values remain visible."
+  },
+  {
+    "kind": "table",
+    "title": "Best family averages by classifier",
+    "section": "05  Results and comparison",
+    "notes": "For each classifier and score, we pick the family version with the highest average and compare it with the strongest main baseline. Positive values favour our family. For random forest, F1 is slightly below the best baseline, even though the other three scores are higher. We chose the best version after seeing the results, so this table does not describe a method that chooses its version automatically before testing.",
+    "source": "latex_paper/tables/envelope.tex",
+    "headers": [
+      "Classifier",
+      "G-mean gain",
+      "F1 gain",
+      "Precision gain",
+      "Recall gain"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "+0.019",
+        "+0.494",
+        "+1.935",
+        "+1.603"
+      ],
+      [
+        "KNN",
+        "+0.204",
+        "+0.670",
+        "+0.911",
+        "+0.617"
+      ],
+      [
+        "RF",
+        "+2.031",
+        "−0.052",
+        "+0.881",
+        "+3.930"
+      ],
+      [
+        "LR",
+        "+0.145",
+        "+0.363",
+        "+0.888",
+        "+1.253"
+      ]
+    ],
+    "widths": [
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.2
+    ],
+    "take": "Percentage-point differences vs strongest core baseline; retrospective per-metric selection"
+  },
+  {
+    "kind": "plot",
+    "title": "G-mean under controlled overlap",
+    "section": "05  Results and comparison",
+    "notes": "This experiment uses generated two-dimensional data so we can control how much the classes overlap. Smaller distance between the class centres means more overlap. Each curve shows one fixed method, and the panels show different classifiers. We use 20 seeds. The bands show uncertainty around the mean. This experiment studies overlap, not wrong training labels, and it is separate from the real-dataset benchmark.",
+    "source": "paper_material/17_overlap_gmean.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper_material\\17_overlap_gmean.png",
+    "take": "Smaller class-centre distance means greater overlap. Each curve shows a fixed method."
+  },
+  {
+    "kind": "plot",
+    "title": "A real-data view: Haberman",
+    "section": "05  Results and comparison",
+    "notes": "Here we show the real Haberman dataset. Every panel uses the same PCA view, fitted on original training data. The resampling settings were chosen using training validation. We selected this example after seeing the results, so it is an illustration rather than independent evidence. Similar-looking clouds are expected because several methods use straight-line interpolation. The picture cannot prove that the labels of new points are correct.",
+    "source": "paper plot/haberman_PCA_comparison.png",
+    "image": "D:\\SEM_5\\ML_PROJECT\\paper plot\\haberman_PCA_comparison.png",
+    "take": "PCA is fitted on the original training data; generation occurs in the full feature space."
+  },
+  {
+    "kind": "table",
+    "title": "Family wins against all four core baselines",
+    "section": "06  Dataset win counts",
+    "notes": "For each dataset and score, we ask whether at least one CASB version beats all four main baselines. We count that as one family win. For random forest, the family wins on G-mean in 28 of the 40 datasets. The best version may differ from one dataset or score to another. Joint means the same version wins on both G-mean and F1. These are descriptive win counts, not counts of statistically proven wins.",
+    "source": "latex_paper/tables/family.tex: Core four",
+    "headers": [
+      "Classifier",
+      "G-mean",
+      "F1",
+      "Precision",
+      "Recall",
+      "Joint*"
+    ],
+    "rows": [
+      [
+        "SVM",
+        "15",
+        "19",
+        "20",
+        "17",
+        "10"
+      ],
+      [
+        "KNN",
+        "20",
+        "19",
+        "21",
+        "17",
+        "12"
+      ],
+      [
+        "RF",
+        "28",
+        "26",
+        "21",
+        "26",
+        "20"
+      ],
+      [
+        "LR",
+        "15",
+        "17",
+        "19",
+        "16",
+        "9"
+      ]
+    ],
+    "widths": [
+      0.2,
+      0.16,
+      0.16,
+      0.16,
+      0.16,
+      0.16
+    ],
+    "take": "Out of 40 datasets. *Same variant wins both G-mean and F1. Per-metric family selection is retrospective."
+  },
+  {
+    "kind": "flow",
+    "title": "What a family win means",
+    "section": "06  Dataset win counts",
+    "notes": "Take one dataset and one score. Find the best CASB version, then find the strongest baseline. If the CASB score is strictly higher, count one family win. This checks what the family achieved after we saw the test results. It does not tell us how to choose the right version on new data. For that, we would need to select the version using training data only.",
+    "source": "latex_paper/manuscript.tex",
+    "steps": [
+      "One dataset + metric",
+      "Best CASB variant",
+      "Strongest baseline",
+      "Strictly higher?"
+    ],
+    "details": [
+      "40 matched tasks",
+      "May vary by task",
+      "SMOTE / B-SMOTE / ROS / ADASYN",
+      "Count one family win"
+    ],
+    "take": "A fixed method and a test-selected family envelope answer different questions."
+  },
+  {
+    "kind": "table",
+    "title": "Limitations and next experiments",
+    "section": "07  Conclusion and future work",
+    "notes": "There are four main limitations. First, a new point may still have the wrong label. Second, coverage can select noisy minority points, and edited does not remove them. Third, a straight line may be a poor path when a minority region is curved or split into separate areas. Fourth, some datasets are related, and the gains depend on the classifier and score. Next we should test stronger checks, better source selection, different generation paths, and new independent datasets.",
+    "source": "latex_paper/manuscript.tex",
+    "headers": [
+      "Current limitation",
+      "Next experiment"
+    ],
+    "rows": [
+      [
+        "Synthetic labels are not guaranteed correct",
+        "Validate generated samples with stronger local checks"
+      ],
+      [
+        "Coverage can repeat minority noise; editing retains it",
+        "Test minority-noise detection and robust source selection"
+      ],
+      [
+        "Straight lines may cross curved or disconnected regions",
+        "Study geometry-aware generation"
+      ],
+      [
+        "Related datasets; classifier- and metric-dependent gains",
+        "Validate on independent sources with a frozen protocol"
+      ]
+    ],
+    "widths": [
+      0.5,
+      0.5
+    ],
+    "take": "Future work should test the explanation, not only seek a higher score.",
+    "insight": "Priority: matched ablations, stronger comparison methods and independent validation."
+  },
+  {
+    "kind": "bullets",
+    "title": "Conclusion",
+    "section": "07 Conclusion and future work",
+    "notes": "CASB gives us a clear way to decide where new minority samples come from. The different versions show useful tradeoffs, especially between recall and precision. Random forest has 28 family G-mean wins out of 40 matched tasks. But we do not claim that CASB wins everywhere. Testing on new independent dataset sources is still important.",
+    "source": "latex_paper/manuscript.tex",
+    "bullets": [
+      "CASB makes source allocation explicit and auditable",
+      "Editing often improves recall while reducing precision",
+      "RF: family G-mean wins on 28 of 40 matched tasks",
+      "Independent-family validation remains essential"
+    ],
+    "take": "Contribution: a reproducible framework with measured, classifier-dependent tradeoffs."
+  },
+  {
+    "kind": "references",
+    "title": "References 1/2",
+    "section": "References",
+    "source": "latex_paper/references.bib",
+    "entries": [
+      [
+        "Chawla et al. (2002)",
+        "SMOTE: Synthetic Minority Over-sampling Technique",
+        "JAIR 16, 321–357\n10.1613/jair.953"
+      ],
+      [
+        "Han, Wang & Mao (2005)",
+        "Borderline-SMOTE: A New Over-Sampling Method in Imbalanced Data Sets Learning",
+        "LNCS 3644, 878–887\n10.1007/11538059_91"
+      ],
+      [
+        "He et al. (2008)",
+        "ADASYN: Adaptive synthetic sampling approach for imbalanced learning",
+        "IJCNN, 1322–1328\n10.1109/IJCNN.2008.4633969"
+      ],
+      [
+        "Bunkhumpornpat et al. (2009)",
+        "Safe-Level-SMOTE: Safe-Level-Synthetic Minority Over-Sampling TEchnique for Handling the Class Imbalanced Problem",
+        "PAKDD, 475–482\n10.1007/978-3-642-01307-2_43"
+      ],
+      [
+        "Douzas & Bacao (2019)",
+        "Geometric SMOTE a geometrically enhanced drop-in replacement for SMOTE",
+        "Information Sciences 501, 118–135\n10.1016/j.ins.2019.06.007"
+      ],
+      [
+        "Napierala & Stefanowski (2016)",
+        "Types of minority class examples and their influence on learning classifiers from imbalanced data",
+        "JIIS 46, 563–597\n10.1007/s10844-015-0368-1"
+      ]
+    ],
+    "notes": "These are the sources used in our paper for the methods, related work, data and software. There is no need to read the full list aloud. The source details are here for anyone who wants to look up a study.",
+    "take": "References from the research paper bibliography."
+  },
+  {
+    "kind": "references",
+    "title": "References 2/2",
+    "section": "References",
+    "source": "latex_paper/references.bib",
+    "entries": [
+      [
+        "Skryjomski & Krawczyk (2017)",
+        "Influence of minority class instance types on SMOTE imbalanced data oversampling",
+        "PMLR 74, 7–21\nproceedings.mlr.press/v74/skryjomski17a.html"
+      ],
+      [
+        "Koziarski & Woźniak (2024)",
+        "Local neighborhood encodings for imbalanced data classification",
+        "Machine Learning 113, 7421–7449\n10.1007/s10994-024-06563-6"
+      ],
+      [
+        "Sağlam & Cengiz (2026)",
+        "Uncertainty guided oversampling: A classifier-specific approach for effective handling of class imbalance in machine learning",
+        "Knowledge-Based Systems 342, 115886\n10.1016/j.knosys.2026.115886"
+      ],
+      [
+        "Alcalá-Fdez et al. (2009)",
+        "KEEL: A software tool to assess evolutionary algorithms for data mining problems",
+        "Soft Computing 13, 307–318\n10.1007/s00500-008-0323-y"
+      ],
+      [
+        "Lemaître, Nogueira & Aridas (2017)",
+        "Imbalanced-learn: A Python Toolbox to Tackle the Curse of Imbalanced Datasets in Machine Learning",
+        "JMLR 18(17), 1–5\njmlr.org/papers/v18/16-365.html"
+      ],
+      [
+        "Pedregosa et al. (2011)",
+        "Scikit-learn: Machine Learning in Python",
+        "JMLR 12, 2825–2830\njmlr.org/papers/v12/pedregosa11a.html"
+      ]
+    ],
+    "notes": "These are the sources used in our paper for the methods, related work, data and software. There is no need to read the full list aloud. The source details are here for anyone who wants to look up a study.",
+    "take": "References from the research paper bibliography."
+  },
+  {
+    "kind": "closing",
+    "title": "Thank you",
+    "section": "Questions",
+    "notes": "Thank you. I am happy to take questions about how we select sources, how the four versions differ, and how we measure the results. If asked whether CASB always beats SMOTE, the answer is no. Its benefit depends on the dataset, classifier and score. Our contribution is the implemented method and the measured tradeoffs.",
+    "source": "latex_paper/manuscript.tex",
+    "subtitle": "Questions and discussion",
+    "take": "Pulkit Sharma  •  Priyanshu Kumar  •  Niranjan Yadav\nDepartment of Artificial Intelligence, SVNIT Surat"
+  }
+]

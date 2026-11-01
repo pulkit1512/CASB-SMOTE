@@ -1,0 +1,191 @@
+replace: OLD: result helps us to examine the tradeoffbetween classification error while sensitivity analysis helps
+NEW: result helps us to examine the tradeoff between classification error while sensitivity analysis helps
+
+replace: OLD: set containing the preprocessed training data = {(xi, yi)}n i=1 where each xiis a vector of
+NEW: set containing the preprocessed training data (xi, yi)ni=1 where each xi is a vector
+
+replace: OLD: = {(xi, yi)}n i=1 where each xiis a vector of pelements. Each data
+NEW: training data (xi, yi)ni=1 where each xi is a vector of p elements. Each
+
+replace: OLD: where each xiis a vector of pelements. Each data point has two labels.
+NEW: each xi is a vector of p elements. Each data point has two labels.
+
+replace: OLD: a label of 1. The set Mcontains the indexes of the minority class
+NEW: a label of 1. The set M contains the indexes of the minority class
+
+replace: OLD: indexes of the minority class and Jcontains the indexes for majority class. The
+NEW: indexes of the minority class and J contains the indexes for majority class. The
+
+replace: OLD: The size of these sets are nm, nj. The numeric features were imputed using
+NEW: The size of these sets are n m N j. The numeric features were imputed using
+
+replace: OLD: in this space. The distance between xand x′ is the L2 norm of x−x′.
+NEW: in this space. The distance between x and x’ is the L2 norm of x
+
+replace: OLD: x′ is the L2 norm of x−x′. The set Nicontains up to ten
+NEW: x’ is the L2 norm of x - x’. The set Ni contains up to
+
+replace: OLD: L2 norm of x−x′. The set Nicontains up to ten observations from the
+NEW: of x - x’. The set Ni contains up to ten observations from the
+
+replace: OLD: coordinates in the neighbourhood. The set Kicontains up to five minority points sorted
+NEW: coordinates in the neighbourhood. The set Ki contains up to five minority points sorted
+
+replace: OLD: five minority points sorted by increasing distance.Define oi= 1 |Ni| ∑ j∈Ni 1(yj=
+NEW: five minority points sorted by increasing distance. Define oi= 1 |Ni| ∑ j∈Ni 1(yj=
+
+replace: OLD: 3.4. Four related variants Original CASB. Original, with 50/30/20 ratios. This aims to
+NEW: 3.4. Four related variants Original CASB. The original configuration uses 50/30/20 quotas and Eq. (9), retaining the original observations. Its intended role is a moderately conservative interpolation generator with explicit allocation to locally mixed
+
+replace: OLD: related variants Original CASB. Original, with 50/30/20 ratios. This aims to be relatively conservative by ensuring
+NEW: a moderately conservative interpolation generator with explicit allocation to locally mixed and sparse regions.
+
+replace: OLD: with 50/30/20 ratios. This aims to be relatively conservative by ensuring that some allocations are made to local mixed and sparse regions. The term
+NEW: interpolation generator with explicit allocation to locally mixed and sparse regions. The word
+
+replace: OLD: local mixed and sparse regions. The term safe in CASB refers to the aim.
+NEW: locally mixed and sparse regions. The word “safe” in the name describes this intention,
+
+delete: OLD: sparse regions. The term safe in CASB refers to the aim. CASB-relaxed Relaxed, 70/20/10 ratios.
+NEW: sparse regions. The word “safe” in the name describes this intention, not
+
+replace: OLD: safe in CASB refers to the aim. CASB-relaxed Relaxed, 70/20/10 ratios. For each non-zero edge
+NEW: regions. The word “safe” in the name describes this intention, not verified label correctness. CASB-relaxed. Relaxed uses 70/20/10 quotas and λmax = 1
+
+replace: OLD: to the aim. CASB-relaxed Relaxed, 70/20/10 ratios. For each non-zero edge λmax = 1. The pooling, fallback
+NEW: label correctness. CASB-relaxed. Relaxed uses 70/20/10 quotas and λmax = 1 for every nonzero
+
+replace: OLD: For each non-zero edge λmax = 1. The pooling, fallback and rare neighbour restrictions are identical
+NEW: uses 70/20/10 quotas and λmax = 1 for every nonzero edge. Pool definitions, fallback, and rare-neighbour restriction remain unchanged. It
+
+replace: OLD: = 1. The pooling, fallback and rare neighbour restrictions are identical to the original. The all-minority ratio is
+NEW: nonzero edge. Pool definitions, fallback, and rare-neighbour restriction remain unchanged. It simultaneously increases the all-minority allocation and disables caps.
+
+delete: OLD: neighbour restrictions are identical to the original. The all-minority ratio is increased and there
+NEW: remain unchanged. It simultaneously increases the all-minority allocation and disables caps. Comparing
+
+replace: OLD: identical to the original. The all-minority ratio is increased and there are no limits. Therefore
+NEW: unchanged. It simultaneously increases the all-minority allocation and disables caps. Comparing original and
+
+replace: OLD: The all-minority ratio is increased and there are no limits. Therefore the difference between the original and relaxed versions is due
+NEW: simultaneously increases the all-minority allocation and disables caps. Comparing original and relaxed therefore does not
+
+replace: OLD: difference between the original and relaxed versions is due to both factors. P. Sharma et al.: Preprint submitted
+NEW: disables caps. Comparing original and relaxed therefore does not isolate either change. P. Sharma et al.: Preprint submitted
+
+replace: OLD: Coverage-aware source allocation for imbalanced learning CASB-edited Edited method starts by generating using
+NEW: Coverage-aware source allocation for imbalanced learning CASB-edited. Edited first runs the relaxed generator.
+
+replace: OLD: allocation for imbalanced learning CASB-edited Edited method starts by generating using the relaxed version. The ENN method
+NEW: allocation for imbalanced learning CASB-edited. Edited first runs the relaxed generator. ENN then targets
+
+replace: OLD: starts by generating using the relaxed version. The ENN method is applied, but we
+NEW: CASB-edited. Edited first runs the relaxed generator. ENN then targets only the original
+
+replace: OLD: using the relaxed version. The ENN method is applied, but we only consider the original majority label.
+NEW: first runs the relaxed generator. ENN then targets only the original majority label, using
+
+delete: OLD: method is applied, but we only consider the original majority label. We set
+NEW: relaxed generator. ENN then targets only the original majority label, using three
+
+replace: OLD: we only consider the original majority label. We set k=3 and apply a mode vote. If
+NEW: then targets only the original majority label, using three neighbours and mode voting. A targeted point
+
+delete: OLD: majority label. We set k=3 and apply a mode vote. If the local mode
+NEW: majority label, using three neighbours and mode voting. A targeted point is
+
+replace: OLD: set k=3 and apply a mode vote. If the local mode differs from the
+NEW: label, using three neighbours and mode voting. A targeted point is removed if the local vote disagrees with its
+
+replace: OLD: a mode vote. If the local mode differs from the label of the targeted point, then remove that point. However, we do not remove any of the minority points (original or generated). If
+NEW: point is removed if the local vote disagrees with its label. All original and generated minority points are preserved. If hmajority
+
+replace: OLD: remove any of the minority points (original or generated). If less majority observations are removed
+NEW: All original and generated minority points are preserved. If hmajority observations are removed, the
+
+replace: OLD: minority points (original or generated). If less majority observations are removed (i.e. less
+NEW: generated minority points are preserved. If hmajority observations are removed, the final ratio is (nm+ G)∕(nj−h), which can exceed the requested pre-cleaning ratio. The implementation raises an error if fewer than two majority observations remain. This cleaner cannot
+
+replace: OLD: or generated). If less majority observations are removed (i.e. less than h), then the resulting ratio will be (nm+ G)∕(nj−h) which can be higher than required. An error is raised if less than 2 majority observations are present in the implementation. Note that this cleaner will not remove mislabelled minority
+NEW: if fewer than two majority observations remain. This cleaner cannot remove mislabeled minority observations.
+
+replace: OLD: the implementation. Note that this cleaner will not remove mislabelled minority observations. CASB-ROS CASB-ROS,
+NEW: two majority observations remain. This cleaner cannot remove mislabeled minority observations. CASB-ROS. CASB-ROS
+
+replace: OLD: that this cleaner will not remove mislabelled minority observations. CASB-ROS CASB-ROS, original source
+NEW: observations remain. This cleaner cannot remove mislabeled minority observations. CASB-ROS. CASB-ROS retains the
+
+insert: OLD: will not remove mislabelled minority observations. CASB-ROS CASB-ROS, original source pools. 50/30/20
+NEW: cleaner cannot remove mislabeled minority observations. CASB-ROS. CASB-ROS retains the original source pools
+
+replace: OLD: not remove mislabelled minority observations. CASB-ROS CASB-ROS, original source pools. 50/30/20 ratio. z=
+NEW: remove mislabeled minority observations. CASB-ROS. CASB-ROS retains the original source pools and 50/30/20 allocation
+
+replace: OLD: minority observations. CASB-ROS CASB-ROS, original source pools. 50/30/20 ratio. z= xs. Rather than
+NEW: CASB-ROS. CASB-ROS retains the original source pools and 50/30/20 allocation but sets z= xs.
+
+replace: OLD: CASB-ROS CASB-ROS, original source pools. 50/30/20 ratio. z= xs. Rather than increasing the
+NEW: the original source pools and 50/30/20 allocation but sets z= xs. It changes source multiplicities
+
+replace: OLD: source pools. 50/30/20 ratio. z= xs. Rather than increasing the support in the
+NEW: 50/30/20 allocation but sets z= xs. It changes source multiplicities rather than feature support. Ordinary ROS lacks
+
+replace: OLD: 50/30/20 ratio. z= xs. Rather than increasing the support in the features, we increase the multiplicity of the sources. However, in contrast to the original ROS, there is no conditioning on the source pools as in CASB. The
+NEW: It changes source multiplicities rather than feature support. Ordinary ROS lacks CASB’s pool-conditioned source mass. The implementation still draws
+
+replace: OLD: is no conditioning on the source pools as in CASB. The neighbour and interpolated values are
+NEW: Ordinary ROS lacks CASB’s pool-conditioned source mass. The implementation still draws a neighbour
+
+insert: OLD: source pools as in CASB. The neighbour and interpolated values are still
+NEW: lacks CASB’s pool-conditioned source mass. The implementation still draws a neighbour and interpolation value before setting
+
+replace: OLD: as in CASB. The neighbour and interpolated values are still drawn, however the actual step is set to
+NEW: implementation still draws a neighbour and interpolation value before setting the actual step to zero; those
+
+delete: OLD: still drawn, however the actual step is set to zero. This maintains the existing
+NEW: value before setting the actual step to zero; those draws preserve the
+
+replace: OLD: the actual step is set to zero. This maintains the existing randomness in the sequence
+NEW: before setting the actual step to zero; those draws preserve the existing random sequence structure and
+
+replace: OLD: to zero. This maintains the existing randomness in the sequence of data. This can
+NEW: zero; those draws preserve the existing random sequence structure and do not move the copied point. This variant is
+
+replace: OLD: maintains the existing randomness in the sequence of data. This can be useful for seeing
+NEW: structure and do not move the copied point. This variant is useful for assessing
+
+replace: OLD: in the sequence of data. This can be useful for seeing how guided repetition
+NEW: not move the copied point. This variant is useful for assessing guided repetition, although
+
+replace: OLD: data. This can be useful for seeing how guided repetition works, but due to
+NEW: point. This variant is useful for assessing guided repetition, although different ratio selections
+
+replace: OLD: be useful for seeing how guided repetition works, but due to the differences in ratios chosen and rounding, it is not a
+NEW: variant is useful for assessing guided repetition, although different ratio selections and rounding mean it is not
+
+replace: OLD: the differences in ratios chosen and rounding, it is not a full ablation
+NEW: repetition, although different ratio selections and rounding mean it is not a complete controlled
+
+replace: OLD: and rounding, it is not a full ablation study of the interpolation. Table
+NEW: rounding mean it is not a complete controlled ablation of interpolation. Table 2 Implemented
+
+delete: OLD: it is not a full ablation study of the interpolation. Table 2 Implemented
+NEW: is not a complete controlled ablation of interpolation. Table 2 Implemented family
+
+delete: OLD: not a full ablation study of the interpolation. Table 2 Implemented family configurations.
+NEW: not a complete controlled ablation of interpolation. Table 2 Implemented family configurations.
+
+insert: OLD: they do not create ten independent P. Sharma et al.: Preprint submitted
+NEW: they do not create ten independent datasets. Forty tasks have complete records for all nine current methods and four classifiers. ADASYN fails on some P. Sharma et al.: Preprint submitted
+
+delete: OLD: an actual capped border audit record. datasets. Forty tasks have complete records for all nine current methods and four classifiers. ADASYN fails on some repetitions of ecoli-0-1-3-7_vs_2-6, iris0, shuttle-c0-vs-c4 and
+NEW: an actual capped border audit record. repetitions of ecoli-0-1-3-7_vs_2-6, iris0, shuttle-c0-vs-c4 and
+
+replace: OLD: denominator. These observations support an average tradeoffbetween majority error and minority detection, but
+NEW: denominator. These observations support an average tradeoff between majority error and minority detection, but
+
+replace: OLD: Journal of Statistics 6, 65–70. URL: https://www.jstor.org/ stable/4615733. Koziarski, M., Woźniak, M., 2024. Local
+NEW: Journal of Statistics 6, 65–70. URL: https://www.jstor. org/stable/4615733. Koziarski, M., Woźniak, M., 2024. Local
+
+replace: OLD: Theory and Applications, pp. 7–21. URL: https://proceedings.mlr.press/ v74/skryjomski17a.html. P. Sharma et al.: Preprint submitted
+NEW: Theory and Applications, pp. 7–21. URL: https://proceedings.mlr. press/v74/skryjomski17a.html. P. Sharma et al.: Preprint submitted

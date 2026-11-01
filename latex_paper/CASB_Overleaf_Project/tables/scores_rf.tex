@@ -1,0 +1,17 @@
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{RF: equal-weight means on 40 matched datasets (percent). Each dataset score averages five supplied folds and two seeds.}\label{tab:scores_rf}
+\begin{tabular}{lrrrr}\toprule
+Method & G-mean & F1 & Precision & Recall \\
+\midrule
+No resampling & 64.516 & 59.401 & 70.564 & 54.879 \\
+SMOTE & 77.153 & 67.907 & 69.424 & 68.941 \\
+B-SMOTE & 73.983 & 65.772 & 68.228 & 66.452 \\
+ROS & 75.239 & 67.592 & 71.133 & 67.040 \\
+ADASYN & 77.289 & 66.828 & 66.513 & 69.572 \\
+CASB & 75.499 & 67.594 & 71.320 & 66.994 \\
+CASB-relaxed & 76.857 & 67.855 & 69.556 & 68.665 \\
+CASB-edited & 79.320 & 67.619 & 64.907 & 73.502 \\
+CASB-ROS & 75.171 & 67.843 & 72.014 & 67.056 \\
+\bottomrule\end{tabular}
+\end{table}

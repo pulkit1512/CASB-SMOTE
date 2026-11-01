@@ -1,0 +1,687 @@
+% MAIN EDITABLE PAPER: all prose, captions and tables are in this file.
+% IEEE conference format from the supplied conference_101719.tex.
+% Scientific content is preserved from ../latex_paper/manuscript.tex.
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage[T1]{fontenc}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{amsmath,amssymb,amsfonts,booktabs,tabularx}
+\usepackage{algorithmic,graphicx,textcomp,xcolor}
+\usepackage{placeins,url,balance,stfloats}
+\Urlmuskip=0mu plus 1mu\relax
+\raggedbottom
+\setcounter{dbltopnumber}{3}
+\renewcommand{\dbltopfraction}{.95}
+\renewcommand{\textfraction}{.05}
+\renewcommand{\dblfloatpagefraction}{.7}
+\renewcommand{\floatpagefraction}{.7}
+\setcounter{topnumber}{4}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{.9}
+% Pack float pages from the top without stretching gaps between objects.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{12pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{12pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
+\graphicspath{{figures/}}
+\newcommand{\casb}{CASB}
+\newcommand{\fig}[4]{\begin{figure*}[!tbp]\centering\includegraphics[width=#3\linewidth,height=.45\textheight,keepaspectratio]{#1}\caption{#4}\label{fig:#2}\end{figure*}}
+\begin{document}
+\title{Coverage-Aware Source Allocation for Binary Imbalanced Learning: Constrained, Relaxed, Edited and Replication-Based Oversampling}
+
+\author{\IEEEauthorblockN{Pulkit Sharma, Priyanshu Kumar, Niranjan Yadav}
+\IEEEauthorblockA{\textit{Department of Artificial Intelligence}\\
+\textit{Sardar Vallabhbhai National Institute of Technology}\\
+Surat, India\\
+Corresponding author: pulkitsharma151206@gmail.com}}
+\maketitle
+\begin{abstract}
+Oversampling changes both the weight and the local geometry of a minority class. Allocating all additional observations uniformly can overlook difficult regions, whereas concentrating exclusively near an estimated boundary can neglect other parts of the class. This paper studies Coverage-Aware Safe-Border SMOTE (CASB), a fixed-mixture framework combining all-minority, borderline and sparse-region source pools. Four variants use conditionally capped interpolation, unrestricted interpolation, unrestricted interpolation followed by majority-only edited nearest neighbours, or source duplication. The implementation is evaluated on 44 binary KEEL tasks using supplied five-fold partitions, two seeds, training-only ratio selection, and SVM, KNN, random forest and logistic regression. Forty tasks support complete comparisons with SMOTE, Borderline-SMOTE, random oversampling and ADASYN; 52 ADASYN failures across the four classifiers are retained as failures. For random forest, the retrospective family wins on G-mean in 28 of 40 tasks and on F1 in 26; these are different metric-wise selections, not one deployable model. Selected fixed-variant gains survive classifier-specific Holm correction, but precision losses also occur, and no paired Wilcoxon result survives the source-family sensitivity analysis. A separate Gaussian overlap experiment and audited generation diagrams clarify the mechanisms without establishing robustness to label noise. The evidence supports a reproducible, classifier-dependent resampling design and identifies the need for matched-cleaner ablations and independent dataset families before stronger superiority claims.
+\end{abstract}
+\begin{IEEEkeywords}
+Imbalanced classification , Oversampling , SMOTE , Minority coverage , Class overlap , Statistical comparison
+\end{IEEEkeywords}
+
+% ======================================================================
+% EDIT TEXT: INTRODUCTION
+% ======================================================================
+\section{Introduction}
+Class imbalance interacts with sparse minority regions, isolated observations and shared class support. A classifier can achieve high accuracy while missing most minority cases: predicting only the majority gives 95\% accuracy at 5\% minority prevalence, but zero minority recall.
+
+Oversampling addresses this problem at the training-data level. Random oversampling (ROS) repeats minority observations; SMOTE creates points between a minority source and one of its minority neighbours \citep{chawla2002}. Both can change a learned boundary without changing the classifier implementation. However, increasing the minority count does not supply independent labels. A generated point inherits its source label, and the assumption that an interpolation segment belongs to that label can fail in an overlapping or disconnected distribution. Repetition avoids that geometric assumption but increases the influence of observations already present.
+
+We ask how a limited generation budget should be shared across the minority class. CASB draws from three overlapping pools: all minority observations, observations in locally mixed neighbourhoods with minority support, and sparse observations with minority support. The original variant limits some interpolation steps using the distance to the nearest observed majority point. The other variants remove these limits, clean majority observations after generation, or duplicate selected sources. We examine these choices separately because choosing a source, generating a point and cleaning the resulting data can each affect the classifier.
+
+Restricting interpolation does not necessarily improve every metric. Similarly, removing majority observations can increase minority recall at the cost of precision. We therefore report G-mean, F1, precision and recall separately, so that these tradeoffs remain visible.
+
+The contributions are an implementation-specific formulation of the four-member CASB family, an audit of its generation and fallback rules, and an exploratory evaluation with transparent failure and selection accounting. The method is assessed using fixed variants as well as explicitly retrospective family summaries. Confusion matrices support an analysis of error tradeoffs; related-task sensitivity tests qualify the statistical evidence. The study does not establish that the exact combination is the first in the literature. It positions the combination against source-type, geometry-aware and cleaning-based predecessors and specifies experiments needed to distinguish their contributions.
+
+The presentation follows the mechanism-to-evidence progression of uncertainty-guided oversampling (UGO) \citep{saglam2026}: literature, method, experimental design, simulation and benchmark results, then interpretation and future work. CASB does not implement UGO's classifier-uncertainty loop, relocation or uncertainty-based stopping.
+\fig{01_prior_work_and_casb.pdf}{prior}{1}{Original comparison of established resampling mechanisms and CASB. Arrows summarize processing roles, not measured superiority. UGO is a literature reference and was not benchmarked in this study.}
+
+% ======================================================================
+% EDIT TEXT: LITERATURE REVIEW
+% ======================================================================
+\section{Literature review}
+\subsection{Random repetition, interpolation and difficult regions}
+ROS changes empirical sample weights by repeating existing observations. It has no need to infer a continuous minority support, which makes it an informative control for any interpolation-based method. Its limitation is equally direct: repetition adds no new feature values and may repeatedly emphasize an erroneous label. Whether that hurts a particular classifier is an empirical question. ROS should therefore remain a serious comparator rather than be dismissed as an obsolete method.
+
+SMOTE samples along minority-neighbour line segments \citep{chawla2002}. Its attraction is a simple generator that expands the training representation beyond exact replicas. Basic SMOTE does not use the surrounding majority labels to constrain each segment. Thus a short minority-to-minority edge is not necessarily a valid minority path: two endpoints can lie on opposite sides of a majority region. CASB retains the line-segment generator and consequently retains this risk whenever it allows full interpolation.
+
+Borderline-SMOTE concentrates generation near minority observations identified as being in danger using local labels \citep{han2005}. It directly addresses the possibility that uniform allocation spends examples far from a difficult boundary. The version evaluated here is borderline-1. Concentrating on one source type creates a design tradeoff: observations outside that type receive no direct source allocation. This is a consequence of the selection rule, not evidence that broad allocation is always preferable. CASB allocates some observations to an all-minority pool precisely to study this tradeoff.
+
+ADASYN assigns more generation to minority observations with a higher local learning difficulty \citep{he2008}. Its adaptive allocation differs from CASB's fixed branch quotas. A high majority fraction can reflect an informative boundary or an unreliable minority label; a local label count alone does not resolve that distinction. The ADASYN failures recorded in this project are feasibility failures of the executed procedure, not proof that the algorithm is generally unsuitable. Comparisons omit incomplete tasks from every method in the matched cohort.
+
+\subsection{Safety, density and minority instance types}
+Safe-Level-SMOTE changes interpolation using local minority support \citep{safe2009}. Geometric SMOTE samples within a configurable geometric region rather than only on the original SMOTE segment \citep{geometric2019}. Both precede CASB's attempt to use local information in generation. CASB's narrower design choice is a branch-dependent displacement cap relative to the nearest majority observation, with an unrestricted coverage exception. A cap on distance from an observed source cannot certify the true label of the generated point, especially when the source itself is mislabeled.
+
+Density-based methods provide another relevant comparison. DBSMOTE uses density structure in synthesis \citep{dbsmote}; K-means/SMOTE allocation uses clusters to distribute generation \citep{kmeans}. Such methods motivate looking beyond a global class ratio. CASB uses a much simpler sparsity statistic, the distance to a source's third minority neighbour, and thresholds that statistic at its upper quartile. That construction avoids an explicit cluster fit but should not be interpreted as discovering true minority subpopulations. Distances also depend on feature representation and can become less informative in high dimensions.
+
+Minority instance categorization is especially close prior work. \citet{napierala2016} distinguish safe, borderline, rare and outlier examples through local class structure. \citet{skryjomski2017} investigate type-specific selection for SMOTE. Local Neighborhood Encodings (LNE) optimize resampling intensities for neighbourhood-defined types, combining over- and undersampling \citep{lne2024}. Therefore, recognizing source types or allocating generation by type is not itself a new CASB contribution. CASB uses overlapping pools and fixed mixture weights rather than an evolutionary optimization of type-specific intensities. The present benchmark does not compare against LNE, so it cannot establish an advantage over that close predecessor.
+
+\subsection{Cleaning and uncertainty-guided frameworks}
+Edited nearest neighbours (ENN) removes observations that disagree with a local vote. The imbalanced-learn implementation exposes the cleaning target and voting rule \citep{imblearn}. Applying a cleaner after synthesis changes the training distribution beyond the addition of minority points. In particular, newly synthesized observations can affect the vote that removes majority examples. CASB-edited uses this established mechanism; it is not a newly proposed ENN algorithm.
+
+The historical SMOTE-ENN comparator is valuable but is not a matched cleaner control. CASB-edited explicitly targets the original majority class with three-neighbour mode voting. A default combined sampler may use different targeting or selection settings. Consequently, a difference from SMOTE-ENN cannot isolate the benefit of CASB generation. The appropriate future control is ordinary SMOTE followed by exactly the same majority-only cleaner, under the same inner ratio selection.
+
+UGO selects informative generation sources through classifier-dependent uncertainty, iteratively refits the classifier, and uses pre-generation filtering and post-generation relocation \citep{saglam2026}. It also exchanges generators within a shared framework. CASB borrows the experimental question of separating allocation from generation, but its allocation uses a fixed neighbourhood computation. The computational and statistical behaviour of these frameworks cannot be inferred from their similar diagram layouts. No UGO outcome is imported into the CASB tables.
+
+\begin{table*}[!tbp]\centering\small
+\caption{Mechanism-level comparison. Limitations in the last column are design scope or risks, not universally observed failures.}\label{tab:literature}
+\begin{tabularx}{\linewidth}{lXXX}\toprule
+Method & Source allocation & Generation / cleaning & Relevant scope or limitation\\\midrule
+ROS & Random minority repetition & Exact copies & No new feature support; repeats label errors\\
+SMOTE & Minority sources & Neighbour interpolation & Majority geometry absent from basic segment rule\\
+B-SMOTE & Local danger sources & Minority interpolation & Source eligibility concentrated near estimated border\\
+ADASYN & Local difficulty weights & Adaptive interpolation & Difficulty does not certify label reliability\\
+Safe-Level & Neighbourhood support & Safety-dependent interpolation & Local support remains a sample-based proxy\\
+Geometric SMOTE & Selected minority sources & Configurable geometric region & Region parameters and representation matter\\
+Density / cluster methods & Density or cluster structure & Structure-dependent synthesis & Estimated structure can be unstable\\
+LNE & Optimized neighbourhood types & Over- and undersampling & Additional optimization and selection choices\\
+SMOTE-ENN & SMOTE then editing & Synthesis plus neighbour deletion & Cleaning settings affect retained data\\
+UGO & Classifier uncertainty & Iteration, filtering, relocation & Requires classifier-dependent repeated fitting\\
+CASB family & Fixed overlapping pools & Cap, full segment, edit or copy & No reliable-label or complete-coverage guarantee\\\bottomrule
+\end{tabularx}\end{table*}
+
+% ======================================================================
+% EDIT TEXT: PROPOSED METHOD
+% ======================================================================
+\section{Proposed method}
+\subsection{Training representation and neighbourhood quantities}
+Let $D=\{(x_i,y_i)\}_{i=1}^{n}$ denote an outer training set after preprocessing, with $x_i\in\mathbb{R}^{p}$ and two labels. The minority is encoded as 1 using the outer training distribution; $M$ and $J$ are minority and majority index sets with sizes $n_m$ and $n_j$. Numeric features are median-imputed and standardized using training-only estimates. Distances below are Euclidean in this transformed space, $\delta(x,x')=\|x-x'\|_2$.
+
+For a minority source $i$, let $N_i$ contain up to ten nearest other training observations. Exclusion is by observation index, not by distance, so another observation with identical coordinates can remain a neighbour. Let $K_i$ contain up to five nearest other minority observations, in increasing distance order. Define
+\begin{align}
+o_i&=\frac{1}{|N_i|}\sum_{j\in N_i}\mathbf{1}(y_j=0), &
+s_i&=\sum_{j\in N_i}\mathbf{1}(y_j=1),\\
+d_i&=\min_{j\in J}\|x_i-x_j\|_2, &
+q_i&=\|x_i-x_{K_i[\min(3,|K_i|)]}\|_2.
+\end{align}
+Here $o_i$ is a local majority fraction, $s_i$ is minority support, $d_i$ is the nearest observed majority distance, and $q_i$ is a local minority sparsity proxy. If fewer than three minority neighbours exist, the last available one supplies $q_i$. At least two observations per class are required by the sampler.
+
+The source pools are
+\begin{align}
+C&=M,\\
+B&=\{i\in M:0.2<o_i\leq0.7,\ s_i\geq2,\ d_i>0\},\\
+R&=\{i\in M:q_i\geq Q_{0.75}(q),\ s_i\geq2,\ d_i>0\}.
+\end{align}
+These are overlapping sets. Every border and rare source is in coverage; an observation may be in both $B$ and $R$. Majority observations supply neighbourhood information but never become generation sources. Support checks constrain $B$ and $R$, not $C$. A noisy minority point can therefore be sampled through coverage.
+\fig{04_source_pools.pdf}{pools}{.92}{Source pools in an independently constructed two-dimensional example. Rings denote eligibility, not generated samples. Pool memberships use the implemented conditions; a sparse source is not automatically a verified rare cluster.}
+
+\subsection{Generation budget and source allocation}
+For a target minority-to-majority ratio $\rho$, the number of additions is
+\begin{equation}G=\max\{0,\lceil\rho n_j\rceil-n_m\}.\label{eq:budget}\end{equation}
+The benchmark wrapper returns unchanged data if the target is already met. The optional interior-majority removal parameter in the implementation is fixed to zero throughout this study. Thus Eq.~\eqref{eq:budget} uses the original majority count; it is not the count after edited cleaning.
+
+Given weights $w=(w_C,w_B,w_R)$, first assign $a_b=\lfloor w_bG\rfloor$. Distribute the remaining $G-\sum_ba_b$ additions to the largest fractional remainders, with stable coverage, border, rare order for ties. Original CASB and CASB-ROS use $(0.5,0.3,0.2)$; relaxed and edited use $(0.7,0.2,0.1)$. For $n_j=100,n_m=20,\rho=.75$, $G=55$: the allocations are $(28,16,11)$ and $(39,11,5)$ respectively. Rounding preserves the exact total budget.
+
+Within each branch, sources are drawn uniformly with replacement. An empty $B$ or $R$ uses $C$ for source selection, but the original branch retains its neighbour and interpolation rule. A rare fallback still uses at most the nearest two minority neighbours and the rare margin. This distinction matters when reproducing the implementation.
+
+Let $P_b$ denote the effective, non-empty pool after fallback. The probability that a randomly selected generated observation uses source $i$ is
+\begin{equation}\pi_i=\sum_{b\in\{C,B,R\}}\frac{a_b}{G}\frac{\mathbf{1}(i\in P_b)}{|P_b|},\qquad G>0.\end{equation}
+Its expected number of uses is $G\pi_i$. Broad coverage means nonzero eligibility, not guaranteed use: the probability a source is never selected is $\prod_b(1-\mathbf{1}(i\in P_b)/|P_b|)^{a_b}$. Overlapping pool memberships increase expected influence. These quantities explain the source-mass bubbles in the audited illustration.
+\fig{10_sampling_path_comparison.pdf}{paths}{1}{SMOTE and CASB sampling paths. CASB computes geometry once, allocates integer quotas, then generates a fixed number of points. There is no uncertainty-driven classifier loop.}
+\fig{02_casb_family_workflow.pdf}{workflow}{1}{Shared CASB workflow and four generator/cleaner configurations. Percentages are generation quotas, not disjoint fractions of the original minority class.}
+
+\subsection{Conditional interpolation and its limited geometric property}
+After choosing source $s$, choose $t$ uniformly from $K_s$; the rare branch uses only the first two entries when two or more exist. Set $L=\|x_t-x_s\|_2$ and generate
+\begin{equation}z=x_s+\lambda(x_t-x_s),\qquad\lambda\sim\mathcal U(0,\lambda_{\max}).\end{equation}
+For original CASB,
+\begin{equation}
+\lambda_{\max}=\begin{cases}
+0,&L=0,\\
+1,&b=C\text{ and }o_s\leq.2,\\
+\min(1,.35d_s/L),&b=R,\\
+\min(1,.50d_s/L),&\text{otherwise}.
+\end{cases}\label{eq:cap}
+\end{equation}
+The branch in Eq.~\eqref{eq:cap} is the allocated branch, including after fallback. The 50\% coverage quota and the 20\% local-majority threshold are different quantities: one allocates budget, the other decides whether an original coverage step is unrestricted. No generated point is rejected or relocated after this rule.
+
+For a capped step with $r=\|z-x_s\|\leq c d_s$ and $c\leq1/2$, any observed majority point $u$ satisfies
+\begin{equation}\|z-u\|\geq\|x_s-u\|-\|z-x_s\|\geq d_s-r\geq r.\end{equation}
+Thus $z$ is at least as close to its source as to any observed majority observation. This follows directly from the triangle inequality. It is not a new classification theorem and does not identify the true class of $z$. It does not apply to unrestricted coverage steps or to relaxed/edited generation. Missing majority observations and incorrect source labels remain possible.
+\fig{03_interpolation_geometry.pdf}{geometry}{.96}{Analytical comparison holding source and neighbour fixed. Original CASB restricts only the stated branches; relaxed and edited permit the full nonzero edge, and CASB-ROS duplicates its source.}
+\fig{11_generation_control_comparison.pdf}{control}{.94}{Worked interpolation-control cases with edge length $L=4$ and nearest-majority distance $d=2$. The displayed bounds describe a generator, not classifier confidence.}
+
+\subsection{Four related variants}
+\paragraph{Original CASB.} The original configuration uses 50/30/20 quotas and Eq.~\eqref{eq:cap}, retaining the original observations. Its intended role is a moderately conservative interpolation generator with explicit allocation to locally mixed and sparse regions. The word ``safe'' in the name describes this intention, not verified label correctness.
+
+\paragraph{CASB-relaxed.} Relaxed uses 70/20/10 quotas and $\lambda_{\max}=1$ for every nonzero edge. Pool definitions, fallback, and rare-neighbour restriction remain unchanged. It simultaneously increases the all-minority allocation and disables caps. Comparing original and relaxed therefore does not isolate either change.
+
+\paragraph{CASB-edited.} Edited first runs the relaxed generator. ENN then targets only the \emph{original majority label}, using three neighbours and mode voting. A targeted point is removed if the local vote disagrees with its label. All original and generated minority points are preserved. If $h$ majority observations are removed, the final ratio is $(n_m+G)/(n_j-h)$, which can exceed the requested pre-cleaning ratio. The implementation raises an error if fewer than two majority observations remain. This cleaner cannot remove mislabeled minority observations.
+
+\paragraph{CASB-ROS.} CASB-ROS retains the original source pools and 50/30/20 allocation but sets $z=x_s$. It changes source multiplicities rather than feature support. Ordinary ROS lacks CASB's pool-conditioned source mass. The implementation still draws a neighbour and interpolation value before setting the actual step to zero; those draws preserve the existing random sequence structure and do not move the copied point. This variant is useful for assessing guided repetition, although different ratio selections and rounding mean it is not a complete controlled ablation of interpolation.
+
+\begin{table*}[!tbp]\centering\small\caption{Implemented family configurations. No optional majority pre-drop is used.}\label{tab:variants}
+\begin{tabular}{llll}\toprule Variant & C/B/R weights & Generation & Post-generation editing\\\midrule
+CASB & .50/.30/.20 & Conditional cap & None\\
+CASB-relaxed & .70/.20/.10 & Full segment & None\\
+CASB-edited & .70/.20/.10 & Full segment & Majority-only ENN\\
+CASB-ROS & .50/.30/.20 & Exact source copy & None\\\bottomrule\end{tabular}\end{table*}
+
+\begin{table*}[!tbp]\centering\small\caption{Shared source-allocation algorithm. All operations use the current training set.}\label{tab:algorithm}
+\begin{tabularx}{\linewidth}{rX}\toprule Step & Operation\\\midrule
+1 & Validate finite inputs and two classes; return unchanged data if balanced or the wrapper target is met.\\
+2 & Fit neighbourhood searches; compute $N_i,K_i,o_i,s_i,d_i,q_i$ on original training observations.\\
+3 & Construct $C,B,R$; choose variant weights and compute $G$ and integer quotas $a_b$.\\
+4 & For each branch $b$, replace an empty source pool with $C$ while retaining $b$.\\
+5 & Repeat $a_b$ times: sample source $s$, then a branch-appropriate minority neighbour $t$.\\
+6 & Set the variant interpolation limit; generate $z$ or copy $x_s$. Record source, neighbour, branch and step.\\
+7 & Append additions with the minority label. For edited only, apply majority-only three-neighbour mode ENN.\\
+8 & Return the resampled set and diagnostics: generation, source use, removals and final counts.\\\bottomrule\end{tabularx}\end{table*}
+
+\subsection{Computation and auditability}
+Nearest-neighbour structures are fitted to full data, minority data and majority data. Under brute-force searches, computing the required neighbourhoods costs up to $O(n_mnp)$ distance arithmetic, with neighbour selection overhead depending on the backend. Generation costs $O(Gp)$ once neighbour lists are stored. ENN adds a neighbourhood search on the augmented data, with a brute-force upper bound of $O((n+G)^2p)$. Tree-based searches can improve particular low-dimensional cases, but no universal logarithmic claim is made. Stored features and output require $O((n+G)p)$ memory; explicit audit records require $O(G)$ additional entries. Library search batching affects temporary memory.
+
+Per-addition audits record source, neighbour, overlap, support, majority distance, branch and interpolation bounds, permitting direct checks of $z=x_s+\lambda(x_t-x_s)$. No controlled runtime benchmark is claimed.
+\fig{12_graphical_casb_process.pdf}{graphical}{1}{Graphical execution of base CASB using one independently generated example. The pictured capped cloud belongs to original CASB; the edited route instead starts with relaxed generation.}
+\fig{13_audited_generation_walkthrough.pdf}{walkthrough}{1}{Audited generation on a constructed 240-majority/40-minority example, seed 42 and ratio .75. Source bubble area reflects selection mass. Green markers identify generated points; the red ring is a known injected label error, not a CASB detection. The zoom uses an actual capped border audit record.}
+\fig{14_final_distribution_panels.pdf}{distributions}{1}{Original constructed data and outputs of six samplers at the same ratio and seed. Gray crosses show removed majority observations; CASB-ROS rings represent multiplicity without coordinate jitter. This illustration is not a KEEL benchmark task.}
+
+% ======================================================================
+% EDIT TEXT: EXPERIMENTAL DESIGN
+% ======================================================================
+\section{Experimental design}
+\subsection{Datasets and evidence populations}
+The benchmark contains 44 binary tasks from the KEEL collection \citep{keel}. Each task supplies five train/test pairs. Two seeds, 42 and 137, control inner partitions and stochastic resampling; they do not create ten independent datasets. Forty tasks have complete records for all nine current methods and four classifiers. ADASYN fails on some repetitions of ecoli-0-1-3-7\_vs\_2-6, iris0, shuttle-c0-vs-c4 and shuttle-c2-vs-c4. The counts are respectively 1, 5, 4 and 3 per classifier. No replacement sampler is substituted.
+
+The current four-classifier benchmark has $44\times5\times2\times9\times4=15{,}840$ attempted outer evaluations, with 52 failures and 15,788 successes. The older guide described SVM/KNN only: 7,920 attempts and 26 failures. The older counts remain correct for that subset but do not describe this expanded paper. Auxiliary Gaussian naive Bayes and compatible historical RUS/SMOTE-ENN records extend the statistical archive to 21,560 attempts and 65 failures; these must not be confused with the current nine-method benchmark.
+
+Related tasks share source datasets: multiple Glass, Yeast, Ecoli, Vehicle and other variants are not independent acquisition studies. The sensitivity analysis groups the collection into 14 source families, or 12 in complete ADASYN comparisons. All 44 tasks have informed development or analysis. The 38 tasks added after the initial six are not an untouched confirmation set. Table~\ref{tab:datasets} lists the actual inventory, and the editable evidence package retains per-task scores.
+% BEGIN TABLE: tables/datasets (edit caption here)
+\begin{table*}[!tbp]
+\centering\small
+\caption{All 44 tasks: original observation count $n$, pre-encoding dimension $p$, and majority/minority imbalance ratio IR, from the first supplied train/test pair. Full class counts are retained in the evidence inventory.}\label{tab:datasets}
+\begin{tabular}{lrrrlrrr}\toprule
+Dataset & $n$ & $p$ & IR & Dataset & $n$ & $p$ & IR \\
+\midrule
+pima & 768 & 8 & 1.87 & iris0 & 150 & 4 & 2.00 \\
+haberman & 306 & 3 & 2.78 & new-thyroid1 & 215 & 5 & 5.14 \\
+yeast3 & 1484 & 8 & 8.10 & new-thyroid2 & 215 & 5 & 5.14 \\
+ecoli4 & 336 & 7 & 15.80 & page-blocks-1-3\_vs\_4 & 472 & 10 & 15.86 \\
+vowel0 & 988 & 13 & 9.98 & page-blocks0 & 5472 & 10 & 8.79 \\
+segment0 & 2308 & 19 & 6.02 & shuttle-c0-vs-c4 & 1829 & 9 & 13.87 \\
+abalone19 & 4174 & 8 & 129.44 & shuttle-c2-vs-c4 & 129 & 9 & 20.50 \\
+abalone9-18 & 731 & 8 & 16.40 & vehicle0 & 846 & 18 & 3.25 \\
+ecoli-0-1-3-7\_vs\_2-6 & 281 & 7 & 39.14 & vehicle1 & 846 & 18 & 2.90 \\
+ecoli-0\_vs\_1 & 220 & 7 & 1.86 & vehicle2 & 846 & 18 & 2.88 \\
+ecoli1 & 336 & 7 & 3.36 & vehicle3 & 846 & 18 & 2.99 \\
+ecoli2 & 336 & 7 & 5.46 & wisconsin & 683 & 9 & 1.86 \\
+ecoli3 & 336 & 7 & 8.60 & yeast-0-5-6-7-9\_vs\_4 & 528 & 8 & 9.35 \\
+glass-0-1-2-3\_vs\_4-5-6 & 214 & 9 & 3.20 & yeast-1-2-8-9\_vs\_7 & 947 & 8 & 30.57 \\
+glass-0-1-6\_vs\_2 & 192 & 9 & 10.29 & yeast-1-4-5-8\_vs\_7 & 693 & 8 & 22.10 \\
+glass-0-1-6\_vs\_5 & 184 & 9 & 19.44 & yeast-1\_vs\_7 & 459 & 7 & 14.30 \\
+glass0 & 214 & 9 & 2.06 & yeast-2\_vs\_4 & 514 & 8 & 9.08 \\
+glass1 & 214 & 9 & 1.82 & yeast-2\_vs\_8 & 482 & 8 & 23.10 \\
+glass2 & 214 & 9 & 11.59 & yeast1 & 1484 & 8 & 2.46 \\
+glass4 & 214 & 9 & 15.46 & yeast4 & 1484 & 8 & 28.10 \\
+glass5 & 214 & 9 & 22.78 & yeast5 & 1484 & 8 & 32.73 \\
+glass6 & 214 & 9 & 6.38 & yeast6 & 1484 & 8 & 41.40 \\
+\bottomrule\end{tabular}
+\end{table*}
+% END TABLE: tables/datasets
+
+\subsection{Simulation design}
+The controlled overlap experiment has two features and identity covariance for both classes. Majority observations follow $N((0,0),I)$ and minority observations follow $N((d,0),I)$, with $d\in\{0,.5,\ldots,5\}$. Each seed generates 400 majority and 40 minority training points and an independent test set of 1,000 majority and 100 minority points. Twenty seeds, 20260--20279, are used. Base random draws are reused across distances and methods within a seed, which improves pairing but correlates distance-specific outcomes.
+
+This experiment varies geometric overlap, not corrupted-label percentage. The separate generation illustrations contain deliberately injected labels where indicated, but are not a quantitative label-noise robustness study. There are $20\times11\times9\times4=7{,}920$ simulation attempts, 7,912 successes and eight ADASYN failures. Each classifier has two failures at distance 5. Curve cells require all twenty successful repeats; incomplete cells are omitted. Simulation averages use the ten complete distances for every method.
+
+\subsection{Compared methods and classifiers}
+The core comparison includes no resampling, SMOTE, Borderline-SMOTE, ROS, ADASYN and the four CASB variants. The number of minority neighbours for library interpolation methods is $\min(5,n_m-1)$; B-SMOTE uses borderline-1. The extended SVM/KNN statistical comparison adds compatible RUS and SMOTE-ENN results. Those controls are unavailable under the RF/LR expanded protocol, and no values are inferred for them. Library components follow the project implementation \citep{imblearn,sklearn}.
+
+SVM uses an RBF kernel, $C=1$ and \texttt{gamma=scale}. KNN uses distance weighting and seven neighbours, reduced only when fewer than seven training observations remain. RF uses 100 trees and minimum leaf size two. LR uses its implemented default regularization with a maximum of 3,000 iterations. None of these four uses class weights in the reported current comparison. Classifier hyperparameters and prediction thresholds are not searched.
+
+RF and LR were retained for presentation after their results were inspected. Gaussian naive Bayes was also evaluated and is reported as an auxiliary result rather than hidden. This post-hoc classifier selection makes the four-classifier presentation exploratory. A future confirmatory experiment must freeze classifier inclusion before outcomes are known.
+
+\subsection{Application protocol and metrics}
+Every outer training fold is split into an inner training partition and a stratified 25\% validation partition. Each sampler tries ratios .50, .75 and 1.00. Selection maximizes $(G\text{-mean}+F1)/2$ on the validation partition, with ties preferring the smaller ratio. This quantity selects a ratio; it is not the paper's composite success criterion. Imputation and scaling are fitted anew in every inner fit. The chosen pipeline is refitted on the full outer training fold, then applied to untouched outer test features.
+
+The two Abalone tasks contain a categorical Sex attribute. Training-fitted most-frequent imputation and dense one-hot encoding handle that attribute, with unknown test categories ignored. Numeric features follow the ordinary numeric pipeline. Interpolation can create fractional dummy values, so this is an encoded-space experiment, not a categorical-aware generator. Comparison with SMOTENC remains future work.
+
+With minority positives, the main metrics are
+\begin{align}
+\mathrm{Recall}&=\frac{TP}{TP+FN}, &\mathrm{Precision}&=\frac{TP}{TP+FP},\\
+F1&=\frac{2TP}{2TP+FP+FN}, &\mathrm{Specificity}&=\frac{TN}{TN+FP},\\
+G\text{-mean}&=\sqrt{\mathrm{Recall}\,\mathrm{Specificity}}.
+\end{align}
+Undefined precision and F1 are set to zero. Metrics are calculated per test fold before averaging; F1 is not reconstructed from averaged precision and recall. Simulation curves also report MCC and IAM. For confusion matrix $C$, the implemented IAM averages
+\begin{equation}\mathrm{IAM}=\frac{1}{2}\sum_{k=0}^{1}\frac{C_{kk}-\max(\sum_{j\ne k}C_{kj},\sum_{j\ne k}C_{jk})}{\max(\sum_jC_{kj},\sum_jC_{jk})},\end{equation}
+following the metric used in the UGO reference. MCC uses the standard binary confusion-matrix correlation. These auxiliary simulation measures do not replace the primary G-mean and F1 benchmark outcomes.
+
+\subsection{Aggregation, family summaries and statistical procedure}
+For dataset $d$, classifier $c$, method $a$ and metric $m$, let $S_{dcam}$ be the mean of its ten outer evaluations. An incomplete group is withheld. Collection-wide averages are $A_{cam}=|D|^{-1}\sum_dS_{dcam}$. Combined tables average classifiers equally after averaging datasets; a large dataset does not receive more weight.
+
+Two different retrospective quantities are reported. The collection envelope is $\max_{a\in\mathcal F}A_{cam}$, choosing one fixed family member for an entire metric column. Dataset-wise family wins count $\max_{a\in\mathcal F}S_{dcam}>\max_{b\in\mathcal B}S_{dcbm}$. The second may select a different variant on each dataset. Neither is a deployable selector or a basis for a confirmatory paired test. A joint G-mean/F1 win requires a single variant to exceed every baseline on both metrics. Ties use tolerance $10^{-12}$.
+
+Fixed-variant inference uses two-sided Wilcoxon signed-rank tests on paired dataset means, following the multiple-dataset comparison framework of \citet{demsar2006}. Pairs without ADASYN use 44 datasets; ADASYN pairs use 40. Zero differences are omitted; differences are rounded to twelve decimals for ranking and the tie-corrected asymptotic calculation is used. Symmetry of the paired-difference distribution and dependence among tasks limit interpretation. Holm correction \citep{holm1979} spans four variants, all compatible baselines and four metrics separately within each classifier: 112 tests for SVM/KNN and 80 for RF/LR.
+
+Friedman tests use the strict 40-task cohort, with eleven methods for SVM/KNN and nine for RF/LR. Four omnibus tests per classifier are Holm-corrected; post-hoc all-pairs results have their own correction family. Source-family mean differences and one lexicographically selected task per source family provide separate sensitivity populations. Exact sign tests are also retained, rather than choosing whichever test produces a desired conclusion. Classifier retention and development reuse are not erased by these corrections.
+
+% ======================================================================
+% EDIT TEXT: EXPERIMENTAL RESULTS
+% ======================================================================
+\section{Experimental results}
+\subsection{Simulation results}
+\subsubsection{Geometry and audited generation}
+Figures~\ref{fig:noise} and \ref{fig:controlled} show what the samplers actually produce on fixed constructed examples. CASB can generate from a deliberately mislabeled minority source because its coverage pool includes that source. The cap limits displacement in some branches; it does not detect the mislabeled point. Curved minority supports also show why two nearby minority endpoints do not guarantee a valid straight-line path. These figures illustrate failure modes as well as intended behaviour.
+\fig{09_noise_and_geometry_panels.pdf}{noise}{1}{Three independently constructed geometry/noise scenarios, with actual SMOTE and CASB outputs. Red circles identify labels flipped by construction. CASB audit counts reveal generation from that source; the method did not detect the error.}
+\fig{05_controlled_resampling.pdf}{controlled}{1}{Controlled sampler outputs at ratio .75 and seed 42. The same transformed constructed dataset is used throughout. This isolates visible generation and cleaning behaviour from ratio tuning, but is not a classification-performance comparison.}
+
+\subsubsection{Overlap-dependent performance}
+Figures~\ref{fig:iam}--\ref{fig:recall} use identical axes and four classifier panels. Each point is the mean of twenty repeats with a pointwise 95\% Student-$t$ interval. These bands are descriptive, not simultaneous confidence bands or paired significance tests. At small $d$, neither source allocation nor resampling supplies information that separates identical class-conditional distributions. At large $d$, the interpolation feasibility of a particular sampler may change; missing ADASYN cells must not be mistaken for zero scores.
+
+Table~\ref{tab:simulation_comparison} summarizes the complete distance range. It deliberately gives the same distance and seed weight to every method. The simulated geometry is only one distributional family with one imbalance ratio, so its averages should not be mixed with real-task scores. Inference in the executed simulation notebook first averages distances within each seed, retaining twenty independent simulation units. It does not treat 220 correlated seed-distance combinations as independent datasets.
+\fig{15_overlap_iam.pdf}{iam}{.88}{IAM over class-centre separation for SVM, KNN, RF and LR. Smaller separation means more overlap. Curves use twenty seeds; incomplete cells are withheld.}
+\fig{16_overlap_mcc.pdf}{mcc}{.88}{MCC in the same overlap experiment. Bands are pointwise 95\% intervals, and distances share base draws within seed.}
+\fig{17_overlap_gmean.pdf}{gmean}{.88}{G-mean over overlap. This combines minority and majority recall; a recall gain alone does not establish a G-mean gain.}
+\fig{18_overlap_f1.pdf}{f1}{.88}{Minority F1 over overlap. The classifier and distance can change the relative ordering of the family members.}
+\fig{19_overlap_precision.pdf}{precision}{.88}{Minority precision over overlap. Precision tradeoffs are retained rather than suppressed when other metrics improve.}
+\fig{20_overlap_recall.pdf}{recall}{.88}{Minority recall over overlap. The x-axis is geometric separation, not a percentage of label corruption.}
+% BEGIN TABLE: tables/simulation_comparison (edit caption here)
+\begin{table*}[!tbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Gaussian overlap simulation performance, averaged equally over 20 seeds and ten complete distances (0--4.5). Distance 5 is excluded for every method because of eight ADASYN failures. Metric/classifier groups and method columns follow the reference-paper layout. Bold marks the largest unrounded row score; these descriptive averages do not establish significance.}\label{tab:simulation_comparison}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+Metric & Classifier & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+IAM & SVM & 0.394 & 0.354 & 0.354 & 0.350 & 0.283 & 0.430 & 0.400 & 0.327 & \textbf{0.433} \\
+ & KNN & \textbf{0.428} & 0.358 & 0.353 & 0.382 & 0.301 & 0.402 & 0.381 & 0.323 & 0.402 \\
+ & RF & 0.434 & 0.471 & 0.394 & 0.423 & 0.352 & \textbf{0.475} & 0.426 & 0.353 & 0.475 \\
+ & LR & \textbf{0.422} & 0.356 & 0.367 & 0.342 & 0.307 & 0.397 & 0.382 & 0.311 & 0.396 \\
+\addlinespace[3pt]
+MCC & SVM & 0.496 & 0.520 & 0.522 & 0.510 & 0.496 & 0.530 & \textbf{0.530} & 0.521 & 0.530 \\
+ & KNN & \textbf{0.502} & 0.480 & 0.489 & 0.496 & 0.468 & 0.495 & 0.498 & 0.493 & 0.494 \\
+ & RF & 0.513 & 0.507 & 0.500 & 0.507 & 0.483 & \textbf{0.514} & 0.510 & 0.508 & 0.513 \\
+ & LR & 0.525 & 0.536 & 0.539 & 0.525 & 0.518 & \textbf{0.542} & 0.541 & 0.529 & 0.542 \\
+\addlinespace[3pt]
+G-mean & SVM & 0.535 & 0.783 & 0.782 & 0.780 & 0.787 & 0.754 & 0.775 & \textbf{0.793} & 0.753 \\
+ & KNN & 0.602 & 0.748 & 0.759 & 0.754 & 0.762 & 0.740 & 0.756 & \textbf{0.777} & 0.739 \\
+ & RF & 0.599 & 0.688 & 0.748 & 0.742 & 0.752 & 0.697 & 0.743 & \textbf{0.780} & 0.681 \\
+ & LR & 0.574 & 0.803 & 0.803 & 0.801 & 0.806 & 0.794 & 0.800 & \textbf{0.807} & 0.794 \\
+\addlinespace[3pt]
+F1 & SVM & 0.492 & 0.566 & 0.568 & 0.556 & 0.542 & 0.573 & \textbf{0.576} & 0.568 & 0.572 \\
+ & KNN & 0.519 & 0.534 & 0.543 & 0.548 & 0.520 & 0.547 & \textbf{0.552} & 0.545 & 0.547 \\
+ & RF & 0.523 & 0.548 & 0.552 & 0.557 & 0.534 & 0.556 & \textbf{0.560} & 0.558 & 0.550 \\
+ & LR & 0.522 & 0.579 & 0.583 & 0.568 & 0.560 & 0.587 & \textbf{0.587} & 0.572 & 0.587 \\
+\addlinespace[3pt]
+Precision & SVM & \textbf{0.613} & 0.495 & 0.500 & 0.477 & 0.452 & 0.522 & 0.515 & 0.490 & 0.522 \\
+ & KNN & \textbf{0.602} & 0.468 & 0.478 & 0.483 & 0.439 & 0.494 & 0.492 & 0.468 & 0.493 \\
+ & RF & \textbf{0.616} & 0.538 & 0.497 & 0.506 & 0.464 & 0.541 & 0.513 & 0.485 & 0.548 \\
+ & LR & \textbf{0.663} & 0.501 & 0.507 & 0.480 & 0.465 & 0.516 & 0.514 & 0.483 & 0.515 \\
+\addlinespace[3pt]
+Recall & SVM & 0.446 & 0.733 & 0.737 & 0.720 & 0.762 & 0.664 & 0.703 & \textbf{0.765} & 0.661 \\
+ & KNN & 0.478 & 0.651 & 0.672 & 0.657 & 0.690 & 0.633 & 0.661 & \textbf{0.715} & 0.631 \\
+ & RF & 0.488 & 0.564 & 0.650 & 0.636 & 0.664 & 0.577 & 0.637 & \textbf{0.713} & 0.560 \\
+ & LR & 0.472 & 0.764 & 0.760 & 0.757 & 0.783 & 0.732 & 0.748 & \textbf{0.799} & 0.733 \\
+\addlinespace[3pt]\bottomrule\end{tabular}}
+\end{table*}
+% END TABLE: tables/simulation_comparison
+
+\subsection{Benchmark dataset results}
+\subsubsection{Fixed-variant scores}
+Table~\ref{tab:benchmark_comparison} groups scores by metric and classifier, with methods across columns. All use the same forty datasets. RF provides a clear example of the tradeoff: CASB-edited reaches G-mean 79.320\% and recall 73.502\%, whereas CASB-ROS has precision 72.014\%. The best family RF F1, 67.855\% for relaxed, is slightly below SMOTE's 67.907\%. A family win count on many datasets therefore does not imply the largest collection mean on every metric.
+
+For SVM, CASB-ROS has the largest family F1 average, while edited has the largest family G-mean and recall. For KNN, original CASB leads family F1 and precision. LR shows small family-average advantages over the core resamplers, but these small differences should not be described as universally decisive. No resampling can retain high precision while missing many minority cases; its precision must be read alongside recall.
+% BEGIN TABLE: tables/benchmark_comparison (edit caption here)
+\begin{table*}[!tbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Benchmark performance on 40 matched datasets. Each metric groups SVM, KNN, RF, LR and equal-classifier summaries; methods are columns. Scores are fractions, not percentages. Bold identifies the largest unrounded value in each row (ties within $10^{-12}$). NORES denotes no resampling. Different rows can have different winners.}\label{tab:benchmark_comparison}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+Metric & Classifier & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+G-mean & SVM & 0.592 & 0.826 & 0.816 & 0.797 & 0.815 & 0.805 & 0.814 & \textbf{0.826} & 0.810 \\
+ & KNN & 0.658 & 0.817 & 0.827 & 0.819 & 0.832 & 0.821 & 0.824 & \textbf{0.834} & 0.810 \\
+ & RF & 0.645 & 0.752 & 0.772 & 0.740 & 0.773 & 0.755 & 0.769 & \textbf{0.793} & 0.752 \\
+ & LR & 0.597 & 0.841 & 0.839 & 0.825 & 0.841 & 0.832 & 0.836 & \textbf{0.843} & 0.835 \\
+ & SVM/KNN & 0.625 & 0.822 & 0.822 & 0.808 & 0.823 & 0.813 & 0.819 & \textbf{0.830} & 0.810 \\
+ & Overall & 0.623 & 0.809 & 0.814 & 0.795 & 0.815 & 0.803 & 0.811 & \textbf{0.824} & 0.802 \\
+\addlinespace[3pt]
+F1 & SVM & 0.547 & 0.670 & 0.666 & 0.656 & 0.647 & 0.673 & 0.671 & 0.661 & \textbf{0.674} \\
+ & KNN & 0.604 & 0.644 & 0.646 & 0.647 & 0.632 & \textbf{0.654} & 0.646 & 0.634 & 0.644 \\
+ & RF & 0.594 & 0.676 & \textbf{0.679} & 0.658 & 0.668 & 0.676 & 0.679 & 0.676 & 0.678 \\
+ & LR & 0.537 & 0.637 & 0.637 & 0.632 & 0.629 & 0.640 & 0.640 & 0.632 & \textbf{0.641} \\
+ & SVM/KNN & 0.575 & 0.657 & 0.656 & 0.651 & 0.639 & \textbf{0.663} & 0.659 & 0.648 & 0.659 \\
+ & Overall & 0.570 & 0.657 & 0.657 & 0.648 & 0.644 & \textbf{0.661} & 0.659 & 0.651 & 0.660 \\
+\addlinespace[3pt]
+Precision & SVM & \textbf{0.666} & 0.633 & 0.634 & 0.615 & 0.600 & 0.652 & 0.643 & 0.612 & 0.653 \\
+ & KNN & \textbf{0.700} & 0.586 & 0.590 & 0.582 & 0.559 & 0.599 & 0.591 & 0.561 & 0.592 \\
+ & RF & 0.706 & 0.711 & 0.694 & 0.682 & 0.665 & 0.713 & 0.696 & 0.649 & \textbf{0.720} \\
+ & LR & \textbf{0.672} & 0.573 & 0.572 & 0.561 & 0.553 & 0.582 & 0.578 & 0.553 & 0.581 \\
+ & SVM/KNN & \textbf{0.683} & 0.610 & 0.612 & 0.599 & 0.580 & 0.626 & 0.617 & 0.586 & 0.622 \\
+ & Overall & \textbf{0.686} & 0.626 & 0.623 & 0.610 & 0.594 & 0.637 & 0.627 & 0.594 & 0.637 \\
+\addlinespace[3pt]
+Recall & SVM & 0.497 & 0.769 & 0.757 & 0.741 & 0.764 & 0.744 & 0.752 & \textbf{0.785} & 0.750 \\
+ & KNN & 0.562 & 0.762 & 0.778 & 0.774 & 0.800 & 0.762 & 0.770 & \textbf{0.806} & 0.749 \\
+ & RF & 0.549 & 0.670 & 0.689 & 0.665 & 0.696 & 0.670 & 0.687 & \textbf{0.735} & 0.671 \\
+ & LR & 0.482 & 0.804 & 0.800 & 0.785 & 0.810 & 0.782 & 0.795 & \textbf{0.822} & 0.788 \\
+ & SVM/KNN & 0.529 & 0.766 & 0.768 & 0.757 & 0.782 & 0.753 & 0.761 & \textbf{0.796} & 0.750 \\
+ & Overall & 0.522 & 0.751 & 0.756 & 0.741 & 0.767 & 0.740 & 0.751 & \textbf{0.787} & 0.739 \\
+\addlinespace[3pt]\bottomrule\end{tabular}}
+\end{table*}
+% END TABLE: tables/benchmark_comparison
+
+
+
+
+
+The SVM/KNN and four-classifier summaries give each classifier equal weight; classifiers are not treated as independent replicates. Figure~\ref{fig:averages} shows score differences for the fixed variants, and Fig.~\ref{fig:ranks} shows how their ranks vary. Table~\ref{tab:rank_wins} reports average ranks in panel A and individual-method win counts, including ties, in panel B.
+\fig{06_average_score_differences.pdf}{averages}{1}{Equal-dataset, equal-four-classifier average differences on forty complete tasks. Cells compare named fixed variants with named baselines, not test-selected maxima.}
+\fig{07_rank_distributions.pdf}{ranks}{1}{Dataset-level ranks of eight resampling methods for four classifiers. Lower is better; ties receive average ranks. Boxes summarize forty dataset means, not independent fold observations.}
+% BEGIN TABLE: tables/rank_wins (edit caption here)
+\begin{table*}[!tbp]\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Average ranks and dataset win counts, on the same 40 tasks and nine methods throughout. Overall first averages the four classifiers within each dataset, then ranks methods. Lower average rank is better; wins count every method tied for the highest score within $10^{-12}$, so row totals can exceed 40. Bold marks the best rank or largest win count separately. These are individual-method wins, not retrospective CASB-family wins.}\label{tab:rank_wins}
+\resizebox{.72\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+\multicolumn{11}{l}{\textbf{A. Average ranks}} \\\midrule
+Metric & Group & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+G-mean & Overall & 8.925 & 5.350 & 4.650 & 4.875 & 3.025 & 5.375 & 4.500 & \textbf{2.725} & 5.575 \\
+ & SVM & 8.500 & 4.037 & 4.888 & 5.025 & \textbf{3.875} & 5.037 & 4.675 & 4.250 & 4.713 \\
+ & KNN & 8.400 & 5.450 & 4.750 & 4.725 & \textbf{3.425} & 4.500 & 4.350 & 3.538 & 5.862 \\
+ & RF & 8.325 & 5.875 & 4.225 & 5.275 & 3.337 & 5.275 & 4.588 & \textbf{2.913} & 5.188 \\
+ & LR & 8.675 & 4.487 & 4.600 & 4.500 & \textbf{3.538} & 5.562 & 4.825 & 4.000 & 4.812 \\
+\addlinespace[2pt]
+F1 & Overall & 6.925 & 4.825 & 4.375 & 5.225 & 5.475 & 4.237 & \textbf{3.638} & 5.550 & 4.750 \\
+ & SVM & 7.150 & 4.237 & 4.388 & 5.213 & 5.438 & 4.362 & \textbf{3.975} & 5.750 & 4.487 \\
+ & KNN & 5.900 & 4.950 & 4.675 & 4.950 & 5.950 & \textbf{3.850} & 4.175 & 5.562 & 4.987 \\
+ & RF & 7.600 & 5.000 & 4.275 & 5.700 & 4.763 & 4.475 & 4.438 & 4.600 & \textbf{4.150} \\
+ & LR & 7.025 & 4.688 & 4.275 & 4.987 & 5.350 & 4.562 & \textbf{4.225} & 5.525 & 4.362 \\
+\addlinespace[2pt]
+Precision & Overall & \textbf{2.275} & 4.400 & 4.438 & 6.300 & 7.025 & 4.013 & 4.475 & 7.675 & 4.400 \\
+ & SVM & \textbf{3.100} & 4.650 & 4.775 & 5.750 & 6.625 & 4.312 & 4.188 & 7.100 & 4.500 \\
+ & KNN & \textbf{2.600} & 4.888 & 4.625 & 5.737 & 7.162 & 3.837 & 4.487 & 7.213 & 4.450 \\
+ & RF & \textbf{3.438} & 4.075 & 4.575 & 5.825 & 6.787 & 4.138 & 4.950 & 7.438 & 3.775 \\
+ & LR & \textbf{2.438} & 4.675 & 4.713 & 6.062 & 6.650 & 4.325 & 4.675 & 7.088 & 4.375 \\
+\addlinespace[2pt]
+Recall & Overall & 9.000 & 5.463 & 4.775 & 4.638 & 2.400 & 5.987 & 4.888 & \textbf{2.000} & 5.850 \\
+ & SVM & 8.750 & 4.325 & 5.100 & 4.975 & 3.275 & 5.475 & 5.388 & \textbf{2.763} & 4.950 \\
+ & KNN & 8.863 & 5.550 & 5.088 & 4.338 & \textbf{2.525} & 4.875 & 4.963 & 2.612 & 6.188 \\
+ & RF & 8.438 & 6.000 & 4.562 & 5.062 & 3.175 & 5.588 & 4.625 & \textbf{2.275} & 5.275 \\
+ & LR & 8.850 & 4.688 & 4.925 & 4.287 & 3.138 & 5.875 & 5.275 & \textbf{2.812} & 5.150 \\
+\addlinespace[2pt]
+\bottomrule\end{tabular}}\par\vspace{5pt}
+\resizebox{.72\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+\multicolumn{11}{l}{\textbf{B. Dataset win counts}} \\\midrule
+Metric & Group & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+G-mean & Overall & 0 & 3 & 1 & 4 & 8 & 1 & 0 & \textbf{21} & 2 \\
+ & SVM & 1 & 10 & 6 & 6 & \textbf{11} & 4 & 4 & 10 & 7 \\
+ & KNN & 0 & 3 & 4 & 8 & 9 & 4 & 4 & \textbf{16} & 1 \\
+ & RF & 2 & 2 & 5 & 3 & 5 & 4 & 4 & \textbf{21} & 4 \\
+ & LR & 1 & 6 & 2 & 8 & 11 & 3 & 3 & \textbf{12} & 3 \\
+\addlinespace[2pt]
+F1 & Overall & \textbf{6} & 2 & 4 & 4 & 4 & \textbf{6} & 4 & 5 & 5 \\
+ & SVM & 6 & 6 & 5 & 6 & \textbf{8} & \textbf{8} & \textbf{8} & 4 & \textbf{8} \\
+ & KNN & \textbf{11} & 6 & 3 & 6 & 3 & 8 & 4 & 6 & 4 \\
+ & RF & 4 & 4 & 3 & 4 & 3 & \textbf{10} & 5 & 9 & 9 \\
+ & LR & 6 & 5 & 5 & 5 & \textbf{8} & 5 & 5 & 7 & 7 \\
+\addlinespace[2pt]
+Precision & Overall & \textbf{32} & 0 & 1 & 1 & 0 & 1 & 1 & 0 & 4 \\
+ & SVM & \textbf{28} & 3 & 3 & 5 & 3 & 8 & 4 & 1 & 6 \\
+ & KNN & \textbf{32} & 2 & 2 & 2 & 1 & 4 & 1 & 2 & 3 \\
+ & RF & \textbf{22} & 6 & 5 & 3 & 2 & 6 & 4 & 3 & 8 \\
+ & LR & \textbf{33} & 3 & 2 & 0 & 3 & 1 & 2 & 1 & 2 \\
+\addlinespace[2pt]
+Recall & Overall & 0 & 1 & 1 & 3 & 11 & 1 & 1 & \textbf{24} & 1 \\
+ & SVM & 0 & 10 & 5 & 7 & 16 & 6 & 7 & \textbf{20} & 9 \\
+ & KNN & 0 & 5 & 3 & 10 & 16 & 4 & 3 & \textbf{21} & 3 \\
+ & RF & 2 & 3 & 4 & 2 & 11 & 4 & 4 & \textbf{27} & 4 \\
+ & LR & 1 & 9 & 5 & 11 & 14 & 3 & 5 & \textbf{22} & 4 \\
+\addlinespace[2pt]
+\bottomrule\end{tabular}}\par\vspace{5pt}
+\end{table*}
+% END TABLE: tables/rank_wins
+
+\subsubsection{Family averages and dataset-level wins}
+Table~\ref{tab:envelope} selects the largest collection-wide average from the family and from the four core resamplers separately for each metric. Table~\ref{tab:family} instead selects within datasets. For RF, the core-baseline family win counts are 28/40 for G-mean and 26/40 for F1; only 20/40 meet the same-variant joint criterion. With all available baselines, RF counts are 27, 26 and 19 respectively. Thus even the strongest classifier does not show a strict majority of joint wins against the expanded baseline set.
+
+SVM and KNN gain a stronger G-mean/recall competitor when compatible SMOTE-ENN is included. Against all available controls, SVM's best family average G-mean is below SMOTE-ENN, while KNN edited exceeds it by a small amount. The no-resampling reference also changes the precision envelope. Reporting only the core four is useful for the original research question, but the broader comparison prevents a misleading claim against all established alternatives.
+% BEGIN TABLE: tables/envelope (edit caption here)
+\begin{table*}[!tbp]
+\centering\small
+\caption{Best collection-wide fixed-variant averages versus the four core resamplers. Selection is retrospective, separately for each metric; differences are percentage points.}\label{tab:envelope}
+\begin{tabular}{lllrlrr}\toprule
+Clf. & Metric & Family member & Score & Baseline & Score & $\Delta$ \\
+\midrule
+SVM & G-mean & CASB-edited & 82.638 & ROS & 82.620 & +0.019 \\
+SVM & F1 & CASB-ROS & 67.444 & ROS & 66.951 & +0.494 \\
+SVM & Precision & CASB-ROS & 65.313 & SMOTE & 63.378 & +1.935 \\
+SVM & Recall & CASB-edited & 78.510 & ROS & 76.906 & +1.603 \\
+KNN & G-mean & CASB-edited & 83.404 & ADASYN & 83.200 & +0.204 \\
+KNN & F1 & CASB & 65.355 & B-SMOTE & 64.685 & +0.670 \\
+KNN & Precision & CASB & 59.939 & SMOTE & 59.028 & +0.911 \\
+KNN & Recall & CASB-edited & 80.618 & ADASYN & 80.001 & +0.617 \\
+RF & G-mean & CASB-edited & 79.320 & ADASYN & 77.289 & +2.031 \\
+RF & F1 & CASB-relaxed & 67.855 & SMOTE & 67.907 & -0.052 \\
+RF & Precision & CASB-ROS & 72.014 & ROS & 71.133 & +0.881 \\
+RF & Recall & CASB-edited & 73.502 & ADASYN & 69.572 & +3.930 \\
+LR & G-mean & CASB-edited & 84.284 & ROS & 84.139 & +0.145 \\
+LR & F1 & CASB-ROS & 64.112 & SMOTE & 63.749 & +0.363 \\
+LR & Precision & CASB & 58.205 & ROS & 57.317 & +0.888 \\
+LR & Recall & CASB-edited & 82.250 & ADASYN & 80.997 & +1.253 \\
+\bottomrule\end{tabular}
+\end{table*}
+% END TABLE: tables/envelope
+% BEGIN TABLE: tables/family (edit caption here)
+\begin{table}[!htbp]
+\centering\small
+\caption{Dataset-level retrospective family wins out of 40. Joint requires the same variant to beat every baseline on both G-mean and F1.}\label{tab:family}
+\resizebox{\columnwidth}{!}{\begin{tabular}{llrrrrr}\toprule
+Scope & Clf. & G-mean & F1 & Prec. & Recall & Joint \\
+\midrule
+Core four & SVM & 15 & 19 & 20 & 17 & 10 \\
+Core four & KNN & 20 & 19 & 21 & 17 & 12 \\
+Core four & RF & 28 & 26 & 21 & 26 & 20 \\
+Core four & LR & 15 & 17 & 19 & 16 & 9 \\
+All available & SVM & 9 & 17 & 8 & 5 & 6 \\
+All available & KNN & 11 & 14 & 5 & 5 & 8 \\
+All available & RF & 27 & 26 & 11 & 25 & 19 \\
+All available & LR & 15 & 15 & 4 & 16 & 9 \\
+\bottomrule\end{tabular}}
+\end{table}
+% END TABLE: tables/family
+% BEGIN TABLE: tables/paired (edit caption here)
+\begin{table*}[!tbp]
+\centering\small
+\caption{Fixed CASB versus SMOTE and CASB-ROS versus ROS. All 44 paired datasets; W/T/L counts, mean difference in percentage points, classifier-specific Holm-adjusted p-values.}\label{tab:paired}
+\begin{tabular}{llllrr}\toprule
+Clf. & Metric & Pair & W/T/L & $\Delta$ & $p_H$ \\
+\midrule
+SVM & G-mean & CASB / SMOTE & 19/8/17 & -1.025 & 1 \\
+SVM & G-mean & CASB-ROS / ROS & 16/6/22 & -1.463 & 1 \\
+SVM & F1 & CASB / SMOTE & 19/8/17 & +0.667 & 1 \\
+SVM & F1 & CASB-ROS / ROS & 17/6/21 & +1.138 & 1 \\
+SVM & Precision & CASB / SMOTE & 22/8/14 & +1.785 & 1 \\
+SVM & Precision & CASB-ROS / ROS & 19/7/18 & +2.691 & 1 \\
+SVM & Recall & CASB / SMOTE & 14/14/16 & -1.175 & 1 \\
+SVM & Recall & CASB-ROS / ROS & 13/13/18 & -1.731 & 1 \\
+KNN & G-mean & CASB / SMOTE & 20/4/20 & -0.564 & 1 \\
+KNN & G-mean & CASB-ROS / ROS & 15/11/18 & -0.588 & 1 \\
+KNN & F1 & CASB / SMOTE & 24/4/16 & +0.642 & 1 \\
+KNN & F1 & CASB-ROS / ROS & 20/11/13 & +0.036 & 1 \\
+KNN & Precision & CASB / SMOTE & 26/5/13 & +0.758 & 1 \\
+KNN & Precision & CASB-ROS / ROS & 20/11/13 & +0.538 & 1 \\
+KNN & Recall & CASB / SMOTE & 15/13/16 & -1.429 & 1 \\
+KNN & Recall & CASB-ROS / ROS & 8/20/16 & -1.193 & 0.3424 \\
+RF & G-mean & CASB / SMOTE & 15/5/24 & -1.501 & 0.7045 \\
+RF & G-mean & CASB-ROS / ROS & 23/7/14 & +0.165 & 1 \\
+RF & F1 & CASB / SMOTE & 22/5/17 & -0.231 & 1 \\
+RF & F1 & CASB-ROS / ROS & 22/7/15 & +0.456 & 1 \\
+RF & Precision & CASB / SMOTE & 22/7/15 & +1.761 & 1 \\
+RF & Precision & CASB-ROS / ROS & 22/7/15 & +1.028 & 1 \\
+RF & Recall & CASB / SMOTE & 11/9/24 & -1.770 & 0.1762 \\
+RF & Recall & CASB-ROS / ROS & 18/15/11 & +0.243 & 1 \\
+LR & G-mean & CASB / SMOTE & 15/6/23 & -0.640 & 1 \\
+LR & G-mean & CASB-ROS / ROS & 16/5/23 & -0.536 & 1 \\
+LR & F1 & CASB / SMOTE & 18/6/20 & +0.145 & 1 \\
+LR & F1 & CASB-ROS / ROS & 19/5/20 & +0.646 & 1 \\
+LR & Precision & CASB / SMOTE & 23/6/15 & +0.732 & 1 \\
+LR & Precision & CASB-ROS / ROS & 22/7/15 & +1.033 & 1 \\
+LR & Recall & CASB / SMOTE & 12/12/20 & -1.587 & 0.678 \\
+LR & Recall & CASB-ROS / ROS & 11/14/19 & -1.413 & 1 \\
+\bottomrule\end{tabular}
+\end{table*}
+% END TABLE: tables/paired
+
+\subsubsection{Statistical comparisons and negative findings}
+All sixteen four-classifier Friedman tests reject after within-classifier correction (Table~\ref{tab:friedman}). This establishes differences somewhere in each method set, not superiority of CASB. The fixed-variant pairwise decisions include both improvements and losses (Table~\ref{tab:significance}). Figure~\ref{fig:significance} retains their direction.
+
+For RF, edited improves G-mean over B-SMOTE by 4.851 percentage points with adjusted $p=.002531$, and over ROS by 3.937 points with $p=.002460$, using 44 valid pairs. Its G-mean advantage over SMOTE is not significant after correction ($p=.1321$); the ADASYN comparison is also not significant. RF edited recall improves significantly against SMOTE, B-SMOTE and ROS. Conversely, its precision is significantly lower than those three baselines. No RF edited F1 comparison against the four core resamplers is significant after the specified correction.
+
+The source-family analysis materially weakens the inferential conclusion. No Wilcoxon comparison survives Holm correction when paired differences are averaged within source families. The one-task-per-family sensitivity also has no corrected Wilcoxon rejection. This is not proof of equivalence or proof that CASB cannot help: there are fewer independent units and substantial heterogeneity. It does mean the dataset-level findings are not robust enough to support broad superiority. Nine corrected source-family exact-sign comparisons reject, so it would also be inaccurate to say every sensitivity test is null. The two tests summarize different properties and neither replaces the declared primary analysis.
+% BEGIN TABLE: tables/friedman (edit caption here)
+\begin{table*}[!tbp]\centering
+\begin{minipage}[t]{.48\textwidth}\vspace{0pt}\centering\small
+\caption{Omnibus Friedman tests on the 40 complete datasets. Holm correction over four metrics within classifier. Rejection does not identify a CASB winner.}\label{tab:friedman}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}\toprule
+Clf. & Metric & $k$ & $\chi_F^2$ & $p_H$ \\
+\midrule
+SVM & G-mean & 11 & 88.467 & 2.16e-14 \\
+SVM & F1 & 11 & 69.496 & 5.55e-11 \\
+SVM & Precision & 11 & 104.549 & 2e-17 \\
+SVM & Recall & 11 & 155.457 & 1.12e-27 \\
+KNN & G-mean & 11 & 94.059 & 1.67e-15 \\
+KNN & F1 & 11 & 44.013 & 3.27e-06 \\
+KNN & Precision & 11 & 121.653 & 7.01e-21 \\
+KNN & Recall & 11 & 174.373 & 1.38e-31 \\
+RF & G-mean & 9 & 109.298 & 1.59e-19 \\
+RF & F1 & 9 & 51.126 & 2.48e-08 \\
+RF & Precision & 9 & 87.558 & 2.91e-15 \\
+RF & Recall & 9 & 137.455 & 3.21e-25 \\
+LR & G-mean & 9 & 95.733 & 9.52e-17 \\
+LR & F1 & 9 & 34.194 & 3.75e-05 \\
+LR & Precision & 9 & 86.450 & 4.88e-15 \\
+LR & Recall & 9 & 146.575 & 4.06e-27 \\
+\bottomrule\end{tabular}}\end{minipage}\hfill
+\begin{minipage}[t]{.48\textwidth}\vspace{0pt}\centering\small
+\caption{Fixed-variant Wilcoxon-Holm decisions, including no resampling and compatible legacy controls. Counts span all four metrics.}\label{tab:significance}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}\toprule
+Classifier & Tests & CASB higher & CASB lower & Not significant \\
+\midrule
+SVM & 112 & 27 & 4 & 81 \\
+KNN & 112 & 18 & 13 & 81 \\
+RF & 80 & 21 & 4 & 55 \\
+LR & 80 & 14 & 5 & 61 \\
+\bottomrule\end{tabular}}\par\vspace{14pt}\centering\small
+\caption{Historical training-only selector over three CASB variants and three ratios (44 datasets). CASB-ROS is not a candidate; RF/LR selector experiments were not run. Scores are percent.}\label{tab:selector}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrrr}\toprule
+Classifier & G-mean & F1 & Precision & Recall \\
+\midrule
+SVM & 82.540 & 69.452 & 66.809 & 77.689 \\
+KNN & 83.593 & 66.551 & 61.023 & 79.310 \\
+Equal SVM/KNN & 83.066 & 68.001 & 63.916 & 78.500 \\
+\bottomrule\end{tabular}}\end{minipage}
+\end{table*}
+% END TABLE: tables/friedman
+% BEGIN TABLE: tables/significance (edit caption here)
+
+% END TABLE: tables/significance
+\fig{08_adjusted_significance.pdf}{significance}{1}{Classifier-specific fixed-variant Wilcoxon-Holm comparisons. Plus and minus indicate significant benefit and harm; dots indicate non-significance. Colour represents signed rank-biserial effect. Correction scopes include compatible legacy controls where available.}
+
+\subsubsection{Training-only selection and auxiliary classifier evidence}
+The historical selector chooses among original, relaxed and edited CASB and three ratios using saved inner-validation scores. CASB-ROS was not a candidate. Reusing the corresponding saved outer refit is valid for that recorded selection decision, because no outer score enters the decision. It remains a retrospectively specified procedure on development data. Table~\ref{tab:selector} reproduces its SVM/KNN metrics over all 44 tasks. The equal-classifier G-mean is 83.066\% and F1 is 68.001\%; these values cannot be compared directly with a forty-task envelope. The selector has nine inner trials versus three for a fixed baseline, so it also has a different search budget. No RF/LR selector performance is inferred.
+
+Gaussian naive Bayes provides an additional negative check on selective presentation. On the forty-task cohort, edited G-mean is 68.310\% versus SMOTE's 67.699\%, and edited F1 is 46.971\% versus 46.142\%. Edited recall is 85.216\%, below ADASYN's 86.790\%. These results remain part of the evidence even though GNB is not a main figure panel. Future comparisons should declare the complete classifier set in advance.
+% BEGIN TABLE: tables/selector (edit caption here)
+
+% END TABLE: tables/selector
+
+\FloatBarrier
+\subsection{Mechanistic Interpretation of Metric-Specific Performance Tradeoffs}
+\subsubsection{Confirmed implementation mechanisms}
+Original CASB limits displacement in capped branches. Relaxed changes both quotas and displacement; edited adds majority-only removal. CASB-ROS changes multiplicities without creating new coordinates. These statements follow from the code and do not depend on whether a metric improves. Original CASB is not a noise filter, and edited does not clean minority labels.
+
+More minority predictions may reduce $FN$ while increasing $FP$. G-mean improves only when the recall--specificity product increases; majority deletion provides no monotonic improvement guarantee.
+
+\subsubsection{Verified observations from confusion matrices}
+Table~\ref{tab:mechanisms} uses recorded confusion matrices to compare edited with original CASB. False-positive and false-negative rates are computed within each fold, then averaged within dataset and across the forty matched tasks. This avoids allowing large test sets to dominate a pooled confusion matrix. The table also quantifies majority removals from saved diagnostics, using the original majority training count as denominator.
+
+These observations support an average tradeoff between majority error and minority detection, but do not isolate quotas, interpolation, ratio selection or cleaning. Independently selected ratios also prevent edited-versus-relaxed from being a fixed-ratio cleaning ablation.
+% BEGIN TABLE: tables/mechanisms (edit caption here)
+\begin{table}[!htbp]
+\centering\small
+\caption{Observed error-rate changes (percentage points) for edited minus original CASB, on 40 datasets. Removal is the mean percentage of original majority training observations removed by edited. These paired pipeline comparisons are not component ablations.}\label{tab:mechanisms}
+\resizebox{\columnwidth}{!}{\begin{tabular}{lrrr}\toprule
+Clf. & $\Delta$ FP rate & $\Delta$ FN rate & Majority removed (\%) \\
+\midrule
+SVM & +2.647 & -4.074 & 8.299 \\
+KNN & +2.997 & -4.374 & 8.084 \\
+RF & +2.779 & -6.508 & 8.226 \\
+LR & +2.338 & -4.018 & 8.289 \\
+\bottomrule\end{tabular}}
+\end{table}
+% END TABLE: tables/mechanisms
+
+\subsubsection{Plausible explanations and their limits}
+The restricted generator can produce a more locally concentrated minority representation, which may preserve precision by limiting influence far from a source. This is a plausible explanation for original CASB's relative precision/F1 strength, not a causal finding. The recorded outcomes do not show that original CASB always has fewer false positives than SMOTE. A cap-only ablation with equal quotas and ratio is necessary to test that claim.
+
+KNN responds directly to the labels and distances of nearby training points. Exact copies can affect neighbourhood composition, while interpolated points can change which observations are nearest. The RBF SVM responds to the regularized margin and kernel similarities; duplicate weighting and new coordinates need not have the same influence. RF changes its splits and leaf class proportions as resampling changes empirical counts. LR responds through its fitted linear score and empirical loss. These familiar classifier properties explain why different effects are plausible, but the benchmark does not identify a universal causal rule linking each source type to each classifier.
+
+CASB-ROS gains over ROS are consistent with useful guided weighting, but do not establish that interpolation is unnecessary. Table~\ref{tab:paired} retains its losses. Edited recall gains cannot demonstrate minority-noise removal because the implementation preserves every minority point.
+
+\subsection{Generated observations and projected examples}
+Figures~\ref{fig:pca_haberman}--\ref{fig:pca_yeast} include the three existing real-data PCA illustrations. They were selected retrospectively for favourable SVM/KNN family G-mean differences, so they are positive case studies. Generation occurs in the full transformed feature space; PCA is fitted on original training data and applied to every panel. The plots use fold 1 and seed 42 with each method's saved SVM-selected ratio. Different ratios can therefore change sample counts.
+
+PCA may conceal high-dimensional separation. Similar CASB and SMOTE clouds are expected from their shared interpolation mechanism; CASB changes source allocation and some step lengths. Green markers identify additions through provenance. Projected appearance does not establish label validity or classification improvement.
+
+\fig{haberman_PCA_comparison.pdf}{pca_haberman}{1}{Haberman PCA case study. Preprocessing and PCA use original training data only. This was a retrospectively selected positive example; method-specific ratios come from saved SVM validation.}
+\fig{abalone19_PCA_comparison.pdf}{pca_abalone}{1}{Abalone19 PCA case study. Generation uses the full encoded feature space; fractional one-hot values may occur. The two-dimensional view does not certify synthetic label validity.}
+\fig{yeast-1-2-8-9_vs_7_PCA_comparison.pdf}{pca_yeast}{1}{Yeast-1-2-8-9\_vs\_7 PCA case study. All panels share a fitted projection and axes. Removed majority points are references; duplicate rings preserve exact coordinates.}
+
+
+
+
+\subsection{Discussion, ablation needs and threats to validity}
+The available variants are informative configurations, not a complete factorial ablation. Original versus relaxed changes two factors. Edited versus relaxed can change the selected ratio as well as invoke cleaning. CASB versus CASB-ROS changes coordinates and potentially validation-selected ratios. A controlled study should hold ratios and random source draws fixed while independently varying coverage-only allocation, border allocation, rare allocation, caps and cleaning. The largest immediate gap is SMOTE followed by the exact majority-only three-neighbour mode cleaner.
+
+Neighbourhood size, overlap thresholds, the sparsity quantile and margins were not exhaustively assessed. Their interpretation can change with dimensionality, scaling, duplicate observations and minority sample size. The third-neighbour statistic may treat a legitimate sparse component and a mislabeled observation similarly. Positive distance and support checks restrict some branches but do not protect the all-minority pool. A future label-noise experiment must corrupt training labels under declared rates and evaluate on clean independent tests; the current overlap experiment does not answer that question.
+
+The benchmark uses supplied folds and two seeds, with development reuse and related tasks. Exact repeated feature vectors can occur across supplied partitions; a group-disjoint sensitivity analysis remains needed. Repeated seeds measure stochastic variation, not new populations. The statistical failure under source-family grouping is reported as a limitation of the present evidence and motivates independent data collection. It should not be reframed as a promise that a future test will become significant.
+
+Baseline coverage is another constraint. Core comparisons answer whether CASB configurations help relative to familiar resamplers. They do not establish superiority over Safe-Level-SMOTE, Geometric SMOTE, LNE, density-aware methods or UGO, none of which is benchmarked here. Compatible historical RUS/SMOTE-ENN data improve the SVM/KNN comparison but leave RF/LR without those matched controls. Additional methods should receive the same preprocessing, classifier and selection budgets.
+
+Test-selected family envelopes are optimistic, and training-only selection can still overfit validation \citep{cawley2010}. The next study should freeze the procedure, ratio search and classifier set before evaluating unseen source families.
+
+% ======================================================================
+% EDIT TEXT: CONCLUSION AND FUTURE WORK
+% ======================================================================
+\FloatBarrier
+\section{Conclusion and future work}
+CASB combines broad minority eligibility with fixed allocation to supported borderline and sparse sources. Its four variants use conditional interpolation, relaxed interpolation, majority-edited interpolation and guided replication. Audited rules make the framework reproducible; its displacement bound is not a label or generalization guarantee.
+
+The forty-task matched benchmark shows classifier-dependent benefits. RF has retrospective family wins on G-mean in 28 tasks and F1 in 26 against the four core resamplers, but only twenty same-variant joint wins. RF's best family mean F1 remains slightly below SMOTE. Some fixed-variant gains survive correction, while precision losses and the absence of corrected source-family Wilcoxon findings prevent a broad superiority claim. The simulation and projected examples help explain the implemented behaviour without demonstrating label-noise robustness.
+
+Future work requires matched component controls, direct comparisons with close predecessors, categorical-aware generation and frozen selection on new source families. The contribution is a reproducible incremental design with measured tradeoffs, not universal superiority.
+
+\section*{Data, code and research transparency}
+The editable project includes figures, generated tables, complete statistical CSVs and input hashes. The workspace retains all 44 executed notebooks and the shared implementation. Current results supersede the older two-classifier guide. Public archive location, author contributions, funding and competing-interest declarations require author confirmation.
+
+
+
+
+\balance
+\bibliographystyle{IEEEtranN}
+\bibliography{references}
+\end{document}
+
+
+

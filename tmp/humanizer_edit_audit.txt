@@ -1,0 +1,59 @@
+Class imbalance occurs
+Machine learning is a branch
+Oversampling techniques  helps
+This study examines
+Limiting the interpolation
+The contribution is an implementation
+Random Oversampling will
+SMOTE synthesises
+Borderline-SMOTE focuses
+ADASYN focuses
+The Safe-Level-SMOTE
+Density based methods
+I find that categorizing
+The edited nearest neighbour
+While the classic comparison
+UGO uses uncertainty
+D is the set containing
+Neighbourhood definition
+Within each branch, sources
+Its expected number of uses
+Thus $z$ is at least
+\paragraph{Original CASB.}
+Relaxed, 70/20/10 ratios.
+Edited method starts
+CASB-ROS, original source
+Nearest-neighbour structures
+Per-addition audits record
+The current four-classifier benchmark
+Related tasks share source
+RF and LR were retained
+Every outer training fold
+The two Abalone tasks
+Two different retrospective quantities
+Friedman tests use
+Figures~\ref{fig:noise}
+Figures~\ref{fig:iam}
+Table~\ref{tab:simulation_comparison} summarizes
+Table~\ref{tab:benchmark_comparison} groups
+For SVM, CASB-ROS
+Table~\ref{tab:envelope} selects
+SVM and KNN gain a stronger
+All sixteen four-classifier Friedman
+The source-family analysis materially
+The historical selector chooses
+Gaussian naive Bayes provides
+Original CASB limits displacement
+Table~\ref{tab:mechanisms} uses
+The restricted generator can produce
+KNN responds directly
+CASB-ROS gains over ROS
+Figures~\ref{fig:pca_haberman}
+PCA may conceal
+The available variants are informative
+Neighbourhood size, overlap thresholds
+The benchmark uses supplied
+Baseline coverage is another
+CASB combines broad
+The forty-task matched benchmark
+Future work requires

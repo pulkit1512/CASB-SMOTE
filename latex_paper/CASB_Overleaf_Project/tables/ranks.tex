@@ -1,0 +1,19 @@
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{Mean ranks for G-mean (G) and F1 (F). Lower is better; SVM/KNN rank eleven methods, RF/LR nine. Ranks cannot be compared across unequal method sets.}\label{tab:ranks}
+\begin{tabular}{lrrrrrrrr}\toprule
+Method & SVM G & SVM F & KNN G & KNN F & RF G & RF F & LR G & LR F \\
+\midrule
+No resampling & 10.375 & 8.575 & 10.075 & 6.875 & 8.325 & 7.600 & 8.675 & 7.025 \\
+SMOTE & 5.987 & 4.875 & 5.737 & 5.213 & 4.225 & 4.275 & 4.600 & 4.275 \\
+B-SMOTE & 6.213 & 5.975 & 5.675 & 5.575 & 5.275 & 5.700 & 4.500 & 4.987 \\
+ROS & 4.925 & 4.713 & 6.487 & 5.612 & 5.875 & 5.000 & 4.487 & 4.688 \\
+ADASYN & 4.912 & 6.225 & 4.400 & 6.750 & 3.337 & 4.763 & 3.538 & 5.350 \\
+CASB & 6.150 & 4.938 & 5.550 & 4.350 & 5.275 & 4.475 & 5.562 & 4.562 \\
+CASB-relaxed & 5.787 & 4.487 & 5.400 & 4.650 & 4.588 & 4.438 & 4.825 & 4.225 \\
+CASB-edited & 5.225 & 6.400 & 4.188 & 6.088 & 2.913 & 4.600 & 4.000 & 5.525 \\
+CASB-ROS & 5.775 & 5.025 & 7.112 & 5.713 & 5.188 & 4.150 & 4.812 & 4.362 \\
+RUS & 5.638 & 7.787 & 6.275 & 7.575 & -- & -- & -- & -- \\
+SMOTE-ENN & 5.013 & 7.000 & 5.100 & 7.600 & -- & -- & -- & -- \\
+\bottomrule\end{tabular}
+\end{table}

@@ -1,0 +1,36 @@
+\begin{table}[pos=!htbp]
+\centering\small\setlength{\tabcolsep}{3pt}
+\caption{Gaussian overlap simulation performance, averaged equally over 20 seeds and ten complete distances (0--4.5). Distance 5 is excluded for every method because of eight ADASYN failures. Metric/classifier groups and method columns follow the reference-paper layout. Bold marks the largest unrounded row score; these descriptive averages do not establish significance.}\label{tab:simulation_comparison}
+\resizebox{\linewidth}{!}{\begin{tabular}{llrrrrrrrrr}\toprule
+Metric & Classifier & NORES & ROS & SMOTE & B-SMOTE & ADASYN & CASB & \shortstack{CASB\\relaxed} & \shortstack{CASB\\edited} & \shortstack{CASB\\ROS} \\\midrule
+IAM & SVM & 0.394 & 0.354 & 0.354 & 0.350 & 0.283 & 0.430 & 0.400 & 0.327 & \textbf{0.433} \\
+ & KNN & \textbf{0.428} & 0.358 & 0.353 & 0.382 & 0.301 & 0.402 & 0.381 & 0.323 & 0.402 \\
+ & RF & 0.434 & 0.471 & 0.394 & 0.423 & 0.352 & \textbf{0.475} & 0.426 & 0.353 & 0.475 \\
+ & LR & \textbf{0.422} & 0.356 & 0.367 & 0.342 & 0.307 & 0.397 & 0.382 & 0.311 & 0.396 \\
+\addlinespace[3pt]
+MCC & SVM & 0.496 & 0.520 & 0.522 & 0.510 & 0.496 & 0.530 & \textbf{0.530} & 0.521 & 0.530 \\
+ & KNN & \textbf{0.502} & 0.480 & 0.489 & 0.496 & 0.468 & 0.495 & 0.498 & 0.493 & 0.494 \\
+ & RF & 0.513 & 0.507 & 0.500 & 0.507 & 0.483 & \textbf{0.514} & 0.510 & 0.508 & 0.513 \\
+ & LR & 0.525 & 0.536 & 0.539 & 0.525 & 0.518 & \textbf{0.542} & 0.541 & 0.529 & 0.542 \\
+\addlinespace[3pt]
+G-mean & SVM & 0.535 & 0.783 & 0.782 & 0.780 & 0.787 & 0.754 & 0.775 & \textbf{0.793} & 0.753 \\
+ & KNN & 0.602 & 0.748 & 0.759 & 0.754 & 0.762 & 0.740 & 0.756 & \textbf{0.777} & 0.739 \\
+ & RF & 0.599 & 0.688 & 0.748 & 0.742 & 0.752 & 0.697 & 0.743 & \textbf{0.780} & 0.681 \\
+ & LR & 0.574 & 0.803 & 0.803 & 0.801 & 0.806 & 0.794 & 0.800 & \textbf{0.807} & 0.794 \\
+\addlinespace[3pt]
+F1 & SVM & 0.492 & 0.566 & 0.568 & 0.556 & 0.542 & 0.573 & \textbf{0.576} & 0.568 & 0.572 \\
+ & KNN & 0.519 & 0.534 & 0.543 & 0.548 & 0.520 & 0.547 & \textbf{0.552} & 0.545 & 0.547 \\
+ & RF & 0.523 & 0.548 & 0.552 & 0.557 & 0.534 & 0.556 & \textbf{0.560} & 0.558 & 0.550 \\
+ & LR & 0.522 & 0.579 & 0.583 & 0.568 & 0.560 & 0.587 & \textbf{0.587} & 0.572 & 0.587 \\
+\addlinespace[3pt]
+Precision & SVM & \textbf{0.613} & 0.495 & 0.500 & 0.477 & 0.452 & 0.522 & 0.515 & 0.490 & 0.522 \\
+ & KNN & \textbf{0.602} & 0.468 & 0.478 & 0.483 & 0.439 & 0.494 & 0.492 & 0.468 & 0.493 \\
+ & RF & \textbf{0.616} & 0.538 & 0.497 & 0.506 & 0.464 & 0.541 & 0.513 & 0.485 & 0.548 \\
+ & LR & \textbf{0.663} & 0.501 & 0.507 & 0.480 & 0.465 & 0.516 & 0.514 & 0.483 & 0.515 \\
+\addlinespace[3pt]
+Recall & SVM & 0.446 & 0.733 & 0.737 & 0.720 & 0.762 & 0.664 & 0.703 & \textbf{0.765} & 0.661 \\
+ & KNN & 0.478 & 0.651 & 0.672 & 0.657 & 0.690 & 0.633 & 0.661 & \textbf{0.715} & 0.631 \\
+ & RF & 0.488 & 0.564 & 0.650 & 0.636 & 0.664 & 0.577 & 0.637 & \textbf{0.713} & 0.560 \\
+ & LR & 0.472 & 0.764 & 0.760 & 0.757 & 0.783 & 0.732 & 0.748 & \textbf{0.799} & 0.733 \\
+\addlinespace[3pt]\bottomrule\end{tabular}}
+\end{table}
